@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GXO Darts Scoreboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gxo-orange: #FF3A00;
+    --gxo-orange-glow: rgba(255, 58, 0, 0.35);
+    --gxo-dark: #0A0A0A;
+    --gxo-card: #141414;
+    --gxo-border: #222;
+    --gxo-text: #F0F0F0;
+    --gxo-muted: #666;
+    --gxo-gold: #FFD700;
+    --gxo-silver: #C0C0C0;
+    --gxo-bronze: #CD7F32;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--gxo-dark);
+    color: var(--gxo-text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,58,0,0.02) 40px, rgba(255,58,0,0.02) 41px),
+      repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(255,58,0,0.02) 40px, rgba(255,58,0,0.02) 41px);
+    pointer-events: none;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 32px 16px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .gxo-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    letter-spacing: 16px;
+    color: var(--gxo-orange);
+    text-shadow: 0 0 40px var(--gxo-orange-glow), 0 0 80px rgba(255,58,0,0.15);
+    line-height: 1;
+    animation: logoIn 0.6s ease-out;
+  }
+
+  .tagline {
+    font-size: 10px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--gxo-muted);
+    margin-top: 4px;
+  }
+
+  .title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 10px;
+    color: var(--gxo-text);
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .title::before, .title::after {
+    content: '';
+    width: 40px;
+    height: 2px;
+    background: var(--gxo-orange);
+  }
+
+  .admin-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 8px 16px;
+    background: var(--gxo-card);
+    color: var(--gxo-muted);
+    border: 1px solid var(--gxo-border);
+    cursor: pointer;
+    z-index: 50;
+    transition: all 0.2s;
+  }
+
+  .admin-toggle:hover {
+    border-color: var(--gxo-orange);
+    color: var(--gxo-text);
+  }
+
+  .admin-toggle.logged-in {
+    border-color: var(--gxo-orange);
+    color: var(--gxo-orange);
+  }
+
+  /* ── MODAL ── */
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.2s;
+  }
+
+  .modal-bg.show { display: flex; }
+
+  .modal {
+    background: var(--gxo-card);
+    border: 1px solid var(--gxo-border);
+    padding: 40px;
+    width: 340px;
+    text-align: center;
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 6px;
+    color: var(--gxo-orange);
+    margin-bottom: 24px;
+  }
+
+  .modal input {
+    width: 100%;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    padding: 12px 16px;
+    background: var(--gxo-dark);
+    color: var(--gxo-text);
+    border: 1px solid var(--gxo-border);
+    outline: none;
+    margin-bottom: 16px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+
+  .modal input:focus { border-color: var(--gxo-orange); }
+
+  .modal-error {
+    color: #FF1744;
+    font-size: 11px;
+    margin-bottom: 12px;
+    min-height: 16px;
+  }
+
+  .btn-login {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 4px;
+    padding: 12px 40px;
+    background: var(--gxo-orange);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .btn-login:hover {
+    background: #e63300;
+    box-shadow: 0 4px 20px var(--gxo-orange-glow);
+  }
+
+  .modal-close {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--gxo-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: color 0.2s;
+  }
+
+  .modal-close:hover { color: var(--gxo-text); }
+
+  /* ── ADMIN PANEL ── */
+  .admin-panel {
+    display: none;
+    background: var(--gxo-card);
+    border: 1px solid var(--gxo-border);
+    padding: 24px;
+    margin-bottom: 32px;
+    animation: rowIn 0.3s ease-out;
+  }
+
+  .admin-panel.show { display: block; }
+
+  .admin-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 4px;
+    color: var(--gxo-orange);
+    margin-bottom: 16px;
+  }
+
+  .admin-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .admin-row input {
+    flex: 1;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    padding: 10px 14px;
+    background: var(--gxo-dark);
+    color: var(--gxo-text);
+    border: 1px solid var(--gxo-border);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .admin-row input:focus { border-color: var(--gxo-orange); }
+  .admin-row input::placeholder { color: var(--gxo-muted); }
+  .admin-row input[type="number"] { width: 100px; flex: none; }
+
+  .btn-admin {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 3px;
+    padding: 10px 24px;
+    background: var(--gxo-orange);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-admin:hover {
+    background: #e63300;
+    box-shadow: 0 4px 16px var(--gxo-orange-glow);
+  }
+
+  .btn-clear {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 8px 16px;
+    background: none;
+    color: var(--gxo-muted);
+    border: 1px solid var(--gxo-border);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-clear:hover {
+    color: #FF1744;
+    border-color: #FF1744;
+  }
+
+  /* ── STATUS ── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gxo-muted);
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #FF1744;
+  }
+
+  .status-dot.connected {
+    background: #00C853;
+    box-shadow: 0 0 6px rgba(0,200,83,0.5);
+  }
+
+  /* ── SCOREBOARD ── */
+  .board-empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--gxo-muted);
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+
+  .board-empty .icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.25;
+  }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--gxo-border);
+    transition: background 0.2s;
+    animation: rowIn 0.3s ease-out;
+  }
+
+  .score-row:hover { background: rgba(255,255,255,0.02); }
+  .score-row.top-1 { background: rgba(255,58,0,0.08); }
+  .score-row.top-1:hover { background: rgba(255,58,0,0.12); }
+
+  .rank-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    min-width: 48px;
+    text-align: center;
+    color: var(--gxo-muted);
+  }
+
+  .top-1 .rank-num { color: var(--gxo-gold); }
+  .top-2 .rank-num { color: var(--gxo-silver); }
+  .top-3 .rank-num { color: var(--gxo-bronze); }
+
+  .medal {
+    font-size: 20px;
+    min-width: 32px;
+    text-align: center;
+  }
+
+  .player-info {
+    flex: 1;
+    margin-left: 8px;
+  }
+
+  .player-name {
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+
+  .top-1 .player-name { color: var(--gxo-orange); }
+
+  .player-date {
+    font-size: 10px;
+    color: var(--gxo-muted);
+    margin-top: 2px;
+  }
+
+  .player-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 2px;
+    text-align: right;
+    min-width: 80px;
+  }
+
+  .top-1 .player-score {
+    color: var(--gxo-orange);
+    text-shadow: 0 0 20px var(--gxo-orange-glow);
+  }
+
+  .btn-delete {
+    background: none;
+    border: 1px solid var(--gxo-border);
+    color: var(--gxo-muted);
+    font-size: 12px;
+    padding: 6px 10px;
+    cursor: pointer;
+    margin-left: 12px;
+    transition: all 0.15s;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .btn-delete:hover {
+    color: #FF1744;
+    border-color: #FF1744;
+  }
+
+  .divider {
+    height: 2px;
+    background: var(--gxo-orange);
+    margin-bottom: 4px;
+  }
+
+  footer {
+    text-align: center;
+    padding: 48px 0 20px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gxo-muted);
+  }
+
+  footer span { color: var(--gxo-orange); }
+
+  @keyframes logoIn { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes rowIn { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes scaleIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+
+  @media (max-width: 500px) {
+    .gxo-logo { font-size: 56px; letter-spacing: 10px; }
+    .title { font-size: 22px; letter-spacing: 6px; }
+    .player-score { font-size: 32px; }
+    .admin-row { flex-wrap: wrap; }
+    .admin-row input[type="number"] { flex: 1; }
+  }
+</style>
+</head>
+<body>
+
+<button class="admin-toggle" id="adminBtn" onclick="handleAdminClick()">ADMIN</button>
+
+<div class="app">
+  <header>
+    <div class="gxo-logo">GXO</div>
+    <div class="tagline">Logistics at full potential</div>
+    <div class="title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="#FF3A00" stroke-width="1.5" opacity="0.3"/>
+        <circle cx="12" cy="12" r="6" stroke="#FF3A00" stroke-width="1.5" opacity="0.5"/>
+        <circle cx="12" cy="12" r="2" fill="#FF3A00"/>
+      </svg>
+      Darts High Scores
+    </div>
+  </header>
+
+  <div class="admin-panel" id="adminPanel">
+    <div class="admin-title">ADD SCORE</div>
+    <div class="admin-row">
+      <input type="text" id="addName" placeholder="Player name" maxlength="24" onkeydown="if(event.key==='Enter')document.getElementById('addScore').focus()">
+      <input type="number" id="addScore" placeholder="Score" min="0" max="9999" onkeydown="if(event.key==='Enter')addEntry()">
+      <button class="btn-admin" onclick="addEntry()">ADD</button>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn-clear" onclick="if(confirm('Clear ALL scores?'))clearAll()">Clear All</button>
+      <button class="btn-clear" onclick="logout()">Log Out</button>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Connecting...</span>
+  </div>
+
+  <div class="divider"></div>
+  <div id="board"><div class="board-empty"><div class="icon">&#127919;</div><div>Connecting to database...</div></div></div>
+
+  <footer>Powered by <span>GXO</span> &mdash; Game On</footer>
+</div>
+
+<!-- Login Modal -->
+<div class="modal-bg" id="loginModal">
+  <div class="modal">
+    <h2>ADMIN LOGIN</h2>
+    <input type="password" id="passInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')attemptLogin()">
+    <div class="modal-error" id="loginError"></div>
+    <button class="btn-login" onclick="attemptLogin()">LOG IN</button>
+    <button class="modal-close" onclick="closeModal()">cancel</button>
+  </div>
+</div>
+
+<!-- Firebase SDK (compat for simplicity in a single HTML file) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<script>
+// ── Firebase Init ──
+const firebaseConfig = {
+  apiKey: "AIzaSyDJoo6khQ59s_BG0tfE4pmaWytncRN64Ao",
+  authDomain: "case-the-ace.firebaseapp.com",
+  databaseURL: "https://case-the-ace-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "case-the-ace",
+  storageBucket: "case-the-ace.firebasestorage.app",
+  messagingSenderId: "662987665662",
+  appId: "1:662987665662:web:34cf928b2b564b850675af"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const scoresRef = db.ref('darts_scores');
+
+// ── State ──
+const ADMIN_PASS = 'gxo2024';
+let isAdmin = false;
+let entries = []; // { key, name, score, date }
+
+// ── Firebase Realtime Listener ──
+scoresRef.on('value', (snapshot) => {
+  entries = [];
+  const data = snapshot.val();
+  if (data) {
+    Object.keys(data).forEach(key => {
+      entries.push({ key, ...data[key] });
+    });
+  }
+  setStatus(true);
+  render();
+}, (error) => {
+  console.error('Firebase error:', error);
+  setStatus(false);
+});
+
+function setStatus(connected) {
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  if (connected) {
+    dot.classList.add('connected');
+    text.textContent = 'Live \u2022 ' + entries.length + ' score' + (entries.length !== 1 ? 's' : '');
+  } else {
+    dot.classList.remove('connected');
+    text.textContent = 'Disconnected';
+  }
+}
+
+// ── Admin Auth ──
+function handleAdminClick() {
+  if (isAdmin) {
+    document.getElementById('adminPanel').classList.toggle('show');
+  } else {
+    document.getElementById('loginModal').classList.add('show');
+    document.getElementById('passInput').value = '';
+    document.getElementById('loginError').textContent = '';
+    setTimeout(() => document.getElementById('passInput').focus(), 100);
+  }
+}
+
+function attemptLogin() {
+  const pass = document.getElementById('passInput').value;
+  if (pass === ADMIN_PASS) {
+    isAdmin = true;
+    closeModal();
+    document.getElementById('adminPanel').classList.add('show');
+    document.getElementById('adminBtn').classList.add('logged-in');
+    document.getElementById('adminBtn').textContent = 'ADMIN \u2713';
+    render();
+  } else {
+    document.getElementById('loginError').textContent = 'Wrong password';
+    document.getElementById('passInput').value = '';
+    document.getElementById('passInput').focus();
+  }
+}
+
+function logout() {
+  isAdmin = false;
+  document.getElementById('adminPanel').classList.remove('show');
+  document.getElementById('adminBtn').classList.remove('logged-in');
+  document.getElementById('adminBtn').textContent = 'ADMIN';
+  render();
+}
+
+function closeModal() {
+  document.getElementById('loginModal').classList.remove('show');
+}
+
+// ── CRUD ──
+function addEntry() {
+  const nameEl = document.getElementById('addName');
+  const scoreEl = document.getElementById('addScore');
+  const name = nameEl.value.trim();
+  const score = parseInt(scoreEl.value);
+  if (!name || isNaN(score) || score < 0) return;
+
+  scoresRef.push({
+    name,
+    score,
+    date: new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+  });
+
+  nameEl.value = '';
+  scoreEl.value = '';
+  nameEl.focus();
+}
+
+function deleteEntry(firebaseKey) {
+  if (confirm('Delete this score?')) {
+    scoresRef.child(firebaseKey).remove();
+  }
+}
+
+function clearAll() {
+  scoresRef.remove();
+}
+
+// ── Render ──
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function render() {
+  const board = document.getElementById('board');
+  const sorted = [...entries].sort((a, b) => b.score - a.score);
+
+  setStatus(true);
+
+  if (sorted.length === 0) {
+    board.innerHTML = '<div class="board-empty"><div class="icon">&#127919;</div><div>No scores yet</div></div>';
+    return;
+  }
+
+  const medals = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+
+  board.innerHTML = sorted.map((entry, rank) => {
+    const cls = rank < 3 ? 'score-row top-' + (rank + 1) : 'score-row';
+    return '<div class="' + cls + '">' +
+      '<div class="rank-num">' + (rank + 1) + '</div>' +
+      '<div class="medal">' + (rank < 3 ? medals[rank] : '') + '</div>' +
+      '<div class="player-info">' +
+        '<div class="player-name">' + escHtml(entry.name) + '</div>' +
+        '<div class="player-date">' + (entry.date || '') + '</div>' +
+      '</div>' +
+      '<div class="player-score">' + entry.score + '</div>' +
+      (isAdmin ? '<button class="btn-delete" onclick="deleteEntry(\'' + entry.key + '\')">\u2715</button>' : '') +
+    '</div>';
+  }).join('');
+}
+</script>
+</body>
+</html>
