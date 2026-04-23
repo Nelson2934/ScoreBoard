@@ -4,194 +4,963 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GXO Darts Scoreboard</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-
 <style>
-:root {
-  --gxo-orange: #FF3A00;
-  --gxo-orange-glow: rgba(255, 58, 0, 0.35);
-  --gxo-dark: #0A0A0A;
-  --gxo-text: #F0F0F0;
-  --gxo-muted: #666;
-  --gxo-gold: #FFD700;
-  --gxo-silver: #C0C0C0;
-  --gxo-bronze: #CD7F32;
-}
+  :root {
+    --gxo-orange: #FF3A00;
+    --gxo-orange-glow: rgba(255, 58, 0, 0.35);
+    --gxo-dark: #0A0A0A;
+    --gxo-card: #141414;
+    --gxo-border: #222;
+    --gxo-text: #F0F0F0;
+    --gxo-muted: #555;
+    --gxo-gold: #FFD700;
+    --gxo-silver: #C0C0C0;
+    --gxo-bronze: #CD7F32;
+  }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
 
-body {
-  background:#000;
-  color:var(--gxo-text);
-  font-family:'Space Mono', monospace;
-  overflow:hidden;
-}
+  body {
+    background: #000;
+    color: var(--gxo-text);
+    font-family: 'Space Mono', monospace;
+  }
 
-.app {
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  padding:20px;
-}
+  /* ── VIDEO BG ── */
+  .video-bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.35;
+  }
 
-/* HEADER */
-header {
-  text-align:center;
-}
+  .video-overlay {
+    position: fixed; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 35%, rgba(0,0,0,0.2) 65%, rgba(0,0,0,0.75) 100%);
+    z-index: 0; pointer-events: none;
+  }
 
-.gxo-logo {
-  font-family:'Bebas Neue';
-  font-size:48px;
-  letter-spacing:10px;
-  color:var(--gxo-orange);
-}
+  .video-fallback {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(255,58,0,0.1) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 80%, rgba(255,58,0,0.07) 0%, transparent 50%), #0A0A0A;
+    display: none;
+  }
+  .video-fallback.show { display: block; }
 
-/* BOARD */
-.board {
-  flex:1;
-  overflow:hidden;
-  margin-top:10px;
-}
+  /* ── LAYOUT ── */
+  .app {
+    position: relative; z-index: 1;
+    height: 100vh;
+    display: flex; flex-direction: column;
+    padding: 16px 28px;
+    overflow: hidden;
+  }
 
-.score-row {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:10px 20px;
-  border-bottom:1px solid rgba(255,255,255,0.05);
+  /* ── HEADER BAR ── */
+  .header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding-bottom: 10px;
+  }
 
-  transition: transform 0.35s cubic-bezier(0.22,1,0.36,1),
-              background 0.3s ease;
-}
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
 
-.top-1 {
-  background: rgba(255,58,0,0.15);
-  animation: leaderPulse 2.5s infinite;
-}
+  .gxo-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 44px;
+    letter-spacing: 10px;
+    color: var(--gxo-orange);
+    text-shadow: 0 0 30px var(--gxo-orange-glow);
+    line-height: 1;
+  }
 
-.player-name {
-  font-weight:bold;
-}
+  .header-sep {
+    width: 2px; height: 28px;
+    background: var(--gxo-orange);
+    opacity: 0.4;
+  }
 
-.player-score {
-  font-family:'Bebas Neue';
-  font-size:32px;
-}
+  .header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 6px;
+    color: var(--gxo-text);
+  }
 
-/* ANIMATIONS */
-@keyframes popIn {
-  0% { transform:scale(0.9); opacity:0; }
-  60% { transform:scale(1.05); opacity:1; }
-  100% { transform:scale(1); }
-}
+  .header-tag {
+    font-size: 8px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gxo-muted);
+  }
 
-.new-entry {
-  animation: popIn 0.4s ease;
-}
+  .live-clock {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 3px;
+    color: var(--gxo-text);
+    opacity: 0.7;
+  }
 
-@keyframes leaderPulse {
-  0% { box-shadow:0 0 0 rgba(255,58,0,0); }
-  50% { box-shadow:0 0 25px rgba(255,58,0,0.5); }
-  100% { box-shadow:0 0 0 rgba(255,58,0,0); }
-}
+  .live-date {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--gxo-muted);
+    text-align: right;
+  }
 
+  .divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gxo-orange), transparent);
+    flex-shrink: 0;
+  }
+
+  /* ── PODIUM ── */
+  .podium {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 12px;
+    padding: 16px 0 12px;
+    flex-shrink: 0;
+  }
+
+  .podium-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 200px;
+    transition: all 0.4s;
+  }
+
+  .podium-slot.empty { opacity: 0.15; }
+
+  .podium-medal { font-size: 28px; margin-bottom: 4px; }
+  .podium-slot.p1 .podium-medal { font-size: 36px; }
+
+  .podium-name {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 3px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .podium-slot.p1 .podium-name {
+    font-size: 32px;
+    color: var(--gxo-orange);
+    text-shadow: 0 0 20px var(--gxo-orange-glow);
+  }
+  .podium-slot.p2 .podium-name { font-size: 24px; color: var(--gxo-silver); }
+  .podium-slot.p3 .podium-name { font-size: 24px; color: var(--gxo-bronze); }
+
+  .podium-score {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  .podium-slot.p1 .podium-score { font-size: 52px; color: var(--gxo-orange); text-shadow: 0 0 30px var(--gxo-orange-glow); }
+  .podium-slot.p2 .podium-score { font-size: 38px; color: var(--gxo-silver); }
+  .podium-slot.p3 .podium-score { font-size: 38px; color: var(--gxo-bronze); }
+
+  .podium-block {
+    width: 100%;
+    border-top: 3px solid;
+    margin-top: 6px;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .podium-slot.p1 .podium-block { height: 60px; border-color: var(--gxo-gold); background: rgba(255,215,0,0.06); }
+  .podium-slot.p2 .podium-block { height: 40px; border-color: var(--gxo-silver); background: rgba(192,192,192,0.04); }
+  .podium-slot.p3 .podium-block { height: 28px; border-color: var(--gxo-bronze); background: rgba(205,127,50,0.04); }
+
+  /* ── SCROLLING LIST ── */
+  .list-header {
+    display: flex;
+    padding: 8px 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--gxo-muted);
+    flex-shrink: 0;
+  }
+
+  .list-header span:first-child { width: 50px; }
+  .list-header span:nth-child(2) { flex: 1; }
+  .list-header span:last-child { text-align: right; min-width: 80px; }
+
+  .list-wrap {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    min-height: 0;
+  }
+
+  .list-inner {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    width: 100%;
+    transition: transform 0.6s ease-in-out;
+  }
+
+  .list-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    background: rgba(10,10,10,0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .list-row.highlight {
+    background: rgba(255,58,0,0.2) !important;
+    animation: rowFlash 1.5s ease-out;
+  }
+
+  @keyframes rowFlash {
+    0% { background: rgba(255,58,0,0.5); }
+    100% { background: rgba(255,58,0,0.2); }
+  }
+
+  .list-rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    min-width: 50px;
+    text-align: center;
+    color: var(--gxo-muted);
+  }
+
+  .list-name {
+    flex: 1;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .list-date {
+    font-size: 9px;
+    color: var(--gxo-muted);
+    margin-left: 12px;
+    white-space: nowrap;
+  }
+
+  .list-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 2px;
+    text-align: right;
+    min-width: 80px;
+    margin-left: 12px;
+  }
+
+  .btn-delete-sm {
+    background: none;
+    border: 1px solid var(--gxo-border);
+    color: var(--gxo-muted);
+    font-size: 10px;
+    padding: 3px 7px;
+    cursor: pointer;
+    margin-left: 10px;
+    font-family: 'Space Mono', monospace;
+  }
+  .btn-delete-sm:hover { color: #FF1744; border-color: #FF1744; }
+
+  /* ── STATUS ── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 0 0;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gxo-muted);
+    flex-shrink: 0;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #FF1744;
+  }
+  .status-dot.connected {
+    background: #00C853;
+    box-shadow: 0 0 6px rgba(0,200,83,0.5);
+  }
+
+  /* ── ADMIN ── */
+  .admin-toggle {
+    position: fixed; top: 12px; right: 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 1px;
+    padding: 6px 14px;
+    background: rgba(20,20,20,0.7);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    color: var(--gxo-muted);
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer; z-index: 50;
+  }
+  .admin-toggle:hover { border-color: var(--gxo-orange); color: var(--gxo-text); }
+  .admin-toggle.logged-in { border-color: var(--gxo-orange); color: var(--gxo-orange); }
+
+  .modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8); z-index: 100;
+    justify-content: center; align-items: center;
+  }
+  .modal-bg.show { display: flex; }
+
+  .modal {
+    background: rgba(20,20,20,0.92);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,58,0,0.2);
+    padding: 36px; width: 320px; text-align: center;
+  }
+
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px; letter-spacing: 6px;
+    color: var(--gxo-orange); margin-bottom: 20px;
+  }
+
+  .modal input {
+    width: 100%; font-family: 'Space Mono', monospace;
+    font-size: 14px; padding: 10px 14px;
+    background: var(--gxo-dark); color: var(--gxo-text);
+    border: 1px solid var(--gxo-border); outline: none;
+    margin-bottom: 14px; text-align: center;
+  }
+  .modal input:focus { border-color: var(--gxo-orange); }
+
+  .modal-error { color: #FF1744; font-size: 11px; margin-bottom: 10px; min-height: 14px; }
+
+  .btn-login {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px; letter-spacing: 4px;
+    padding: 10px 36px;
+    background: var(--gxo-orange); color: #fff;
+    border: none; cursor: pointer; width: 100%;
+  }
+  .btn-login:hover { background: #e63300; }
+
+  .modal-close {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: var(--gxo-muted);
+    background: none; border: none; cursor: pointer; margin-top: 14px;
+  }
+
+  .admin-panel {
+    display: none;
+    background: rgba(20,20,20,0.75);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,58,0,0.2);
+    padding: 14px 18px; flex-shrink: 0; margin: 8px 0;
+  }
+  .admin-panel.show { display: block; }
+
+  .admin-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px; letter-spacing: 4px;
+    color: var(--gxo-orange); margin-bottom: 8px;
+  }
+
+  .admin-row { display: flex; gap: 8px; margin-bottom: 6px; }
+
+  .admin-row input {
+    flex: 1; font-family: 'Space Mono', monospace;
+    font-size: 12px; padding: 8px 10px;
+    background: var(--gxo-dark); color: var(--gxo-text);
+    border: 1px solid var(--gxo-border); outline: none;
+  }
+  .admin-row input:focus { border-color: var(--gxo-orange); }
+  .admin-row input::placeholder { color: var(--gxo-muted); }
+  .admin-row input[type="number"] { width: 80px; flex: none; }
+
+  .btn-admin {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px; letter-spacing: 3px;
+    padding: 8px 18px;
+    background: var(--gxo-orange); color: #fff;
+    border: none; cursor: pointer; white-space: nowrap;
+  }
+  .btn-admin:hover { background: #e63300; }
+
+  .btn-clear {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; padding: 5px 10px;
+    background: none; color: var(--gxo-muted);
+    border: 1px solid var(--gxo-border); cursor: pointer;
+  }
+  .btn-clear:hover { color: #FF1744; border-color: #FF1744; }
+
+  .sound-toggle {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; padding: 5px 10px;
+    background: none; color: var(--gxo-muted);
+    border: 1px solid var(--gxo-border); cursor: pointer;
+  }
+  .sound-toggle.on { color: var(--gxo-orange); border-color: var(--gxo-orange); }
+
+  /* ── CELEBRATION OVERLAY ── */
+  .celebration {
+    display: none;
+    position: fixed; inset: 0;
+    z-index: 200;
+    pointer-events: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  .celebration.show { display: flex; }
+
+  .celebration-bg {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.6);
+    animation: celebFade 3s forwards;
+  }
+
+  @keyframes celebFade {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .celeb-text {
+    position: relative; z-index: 1;
+    text-align: center;
+    animation: celebPop 3s forwards;
+  }
+
+  @keyframes celebPop {
+    0% { opacity: 0; transform: scale(0.5); }
+    15% { opacity: 1; transform: scale(1.1); }
+    25% { transform: scale(1); }
+    70% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.9); }
+  }
+
+  .celeb-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px; letter-spacing: 8px;
+    color: var(--gxo-gold);
+    text-transform: uppercase;
+  }
+
+  .celeb-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 90px; letter-spacing: 10px;
+    color: var(--gxo-orange);
+    text-shadow: 0 0 60px var(--gxo-orange-glow), 0 0 120px rgba(255,58,0,0.3);
+  }
+
+  .celeb-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 50px; letter-spacing: 4px;
+    color: var(--gxo-gold);
+    text-shadow: 0 0 30px rgba(255,215,0,0.4);
+  }
+
+  /* ── CONFETTI ── */
+  .confetti-piece {
+    position: fixed;
+    z-index: 201;
+    width: 10px; height: 10px;
+    pointer-events: none;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  .board-empty {
+    text-align: center; padding: 40px 20px;
+    color: var(--gxo-muted); font-size: 13px;
+    letter-spacing: 2px; width: 100%;
+  }
+  .board-empty .icon { font-size: 40px; margin-bottom: 10px; opacity: 0.25; }
+
+  @media (max-width: 600px) {
+    .app { padding: 10px; }
+    .gxo-logo { font-size: 32px; letter-spacing: 6px; }
+    .header-title { font-size: 16px; letter-spacing: 4px; }
+    .live-clock { font-size: 24px; }
+    .podium-slot { width: 120px; }
+    .podium-slot.p1 .podium-name { font-size: 22px; }
+    .podium-slot.p2 .podium-name, .podium-slot.p3 .podium-name { font-size: 18px; }
+    .podium-slot.p1 .podium-score { font-size: 36px; }
+    .podium-slot.p2 .podium-score, .podium-slot.p3 .podium-score { font-size: 28px; }
+    .celeb-name { font-size: 48px; }
+    .celeb-score { font-size: 32px; }
+    .admin-row { flex-wrap: wrap; }
+    .admin-row input[type="number"] { flex: 1; }
+  }
 </style>
 </head>
-
 <body>
 
-<div class="app">
-  <header>
-    <div class="gxo-logo">GXO DARTS</div>
-  </header>
+<video class="video-bg" id="videoBg" autoplay muted loop playsinline>
+  <source src="1.mp4" type="video/mp4">
+</video>
+<div class="video-fallback" id="videoFallback"></div>
+<div class="video-overlay"></div>
 
-  <div class="board" id="board"></div>
+<!-- Celebration overlay -->
+<div class="celebration" id="celebration">
+  <div class="celebration-bg"></div>
+  <div class="celeb-text">
+    <div class="celeb-label">&#9733; NEW HIGH SCORE &#9733;</div>
+    <div class="celeb-name" id="celebName"></div>
+    <div class="celeb-score" id="celebScore"></div>
+  </div>
+</div>
+
+<button class="admin-toggle" id="adminBtn" onclick="handleAdminClick()">ADMIN</button>
+
+<div class="app">
+  <div class="header-bar">
+    <div class="header-left">
+      <div class="gxo-logo">GXO</div>
+      <div class="header-sep"></div>
+      <div>
+        <div class="header-title">Darts High Scores</div>
+        <div class="header-tag">Logistics at full potential</div>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div class="live-clock" id="clock"></div>
+      <div class="live-date" id="dateDisplay"></div>
+    </div>
+  </div>
+
+  <div class="admin-panel" id="adminPanel">
+    <div class="admin-title">ADD SCORE</div>
+    <div class="admin-row">
+      <input type="text" id="addName" placeholder="Player name" maxlength="24" onkeydown="if(event.key==='Enter')document.getElementById('addScore').focus()">
+      <input type="number" id="addScore" placeholder="Score" min="0" max="9999" onkeydown="if(event.key==='Enter')addEntry()">
+      <button class="btn-admin" onclick="addEntry()">ADD</button>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:flex-end">
+      <button class="sound-toggle" id="soundBtn" onclick="toggleSound()">SOUND: OFF</button>
+      <button class="btn-clear" onclick="if(confirm('Clear ALL scores?'))clearAll()">Clear All</button>
+      <button class="btn-clear" onclick="logout()">Log Out</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Podium for top 3 -->
+  <div class="podium" id="podium"></div>
+
+  <div class="divider"></div>
+
+  <div class="list-header" id="listHeader" style="display:none">
+    <span>RANK</span>
+    <span>PLAYER</span>
+    <span style="text-align:right">SCORE</span>
+  </div>
+
+  <!-- Scrolling list for 4th place onwards -->
+  <div class="list-wrap" id="listWrap">
+    <div class="list-inner" id="listInner"></div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Connecting...</span>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal-bg" id="loginModal">
+  <div class="modal">
+    <h2>ADMIN LOGIN</h2>
+    <input type="password" id="passInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')attemptLogin()">
+    <div class="modal-error" id="loginError"></div>
+    <button class="btn-login" onclick="attemptLogin()">LOG IN</button>
+    <button class="modal-close" onclick="closeModal()">cancel</button>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
+// ── Firebase ──
 firebase.initializeApp({
   apiKey: "AIzaSyBAtoiBIjO9YOSpq01NE4PIXfKojIHhoNo",
   authDomain: "gxodarts.firebaseapp.com",
   databaseURL: "https://gxodarts-default-rtdb.firebaseio.com",
+  projectId: "gxodarts",
+  storageBucket: "gxodarts.firebasestorage.app",
+  messagingSenderId: "184730926165",
+  appId: "1:184730926165:web:29a6c61e991af3783728dc"
 });
 
 const db = firebase.database();
 const scoresRef = db.ref('darts_scores');
 
+const ADMIN_PASS = 'gxo2024';
+let isAdmin = false;
 let entries = [];
-let previousPositions = {};
+let prevTopKey = null; // track #1 for celebration
+let soundOn = false;
+let scrollOffset = 0;
+let scrollTimer = null;
+let highlightKeys = new Set();
 
-// LOAD DATA
-scoresRef.on('value', snap => {
-  entries = [];
-  const data = snap.val();
-  if (data) {
-    Object.keys(data).forEach(k => {
-      entries.push({ key:k, ...data[k] });
-    });
-  }
-  render();
-});
+// ── Audio (Web Audio API — no files needed) ──
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// RENDER
-function render() {
-  const board = document.getElementById('board');
-  const sorted = [...entries].sort((a,b)=>b.score-a.score);
+function playDartSound() {
+  if (!soundOn) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.connect(g); g.connect(audioCtx.destination);
+  o.type = 'sine';
+  o.frequency.setValueAtTime(800, audioCtx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.15);
+  g.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+  o.start(); o.stop(audioCtx.currentTime + 0.2);
+}
 
-  // STORE OLD POSITIONS
-  const oldPositions = {};
-  document.querySelectorAll('.score-row').forEach(row => {
-    oldPositions[row.dataset.key] = row.getBoundingClientRect();
-  });
-
-  board.innerHTML = sorted.map((e,i)=>{
-    const isNew = !previousPositions[e.key];
-    return `
-      <div class="score-row ${i===0?'top-1':''} ${isNew?'new-entry':''}" data-key="${e.key}">
-        <div>${i+1}. ${e.name}</div>
-        <div class="player-score">${e.score}</div>
-      </div>
-    `;
-  }).join('');
-
-  // ANIMATE MOVEMENT
-  requestAnimationFrame(()=>{
-    document.querySelectorAll('.score-row').forEach(row=>{
-      const key = row.dataset.key;
-      const newPos = row.getBoundingClientRect();
-      const oldPos = oldPositions[key];
-
-      if(oldPos){
-        const dx = oldPos.left - newPos.left;
-        const dy = oldPos.top - newPos.top;
-
-        if(dx || dy){
-          row.style.transform = `translate(${dx}px, ${dy}px)`;
-          row.offsetHeight;
-          row.style.transform = '';
-        }
-      }
-    });
-  });
-
-  // SAVE STATE
-  previousPositions = {};
-  document.querySelectorAll('.score-row').forEach(r=>{
-    previousPositions[r.dataset.key] = true;
+function playCelebSound() {
+  if (!soundOn) return;
+  const notes = [523, 659, 784, 1047];
+  notes.forEach((freq, i) => {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type = 'triangle';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, audioCtx.currentTime + i * 0.12);
+    g.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + i * 0.12 + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.12 + 0.4);
+    o.start(audioCtx.currentTime + i * 0.12);
+    o.stop(audioCtx.currentTime + i * 0.12 + 0.4);
   });
 }
 
-// RESIZE OPTIMISATION
-let resizeTimer;
-window.addEventListener('resize', ()=>{
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(render,100);
-});
-</script>
+function toggleSound() {
+  soundOn = !soundOn;
+  const btn = document.getElementById('soundBtn');
+  btn.textContent = 'SOUND: ' + (soundOn ? 'ON' : 'OFF');
+  btn.classList.toggle('on', soundOn);
+  if (soundOn) audioCtx.resume();
+}
 
+// ── Confetti ──
+function spawnConfetti() {
+  const colors = ['#FF3A00', '#FFD700', '#FF6B35', '#FFF', '#C0C0C0'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.top = '-20px';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.width = (6 + Math.random() * 8) + 'px';
+    el.style.height = (6 + Math.random() * 8) + 'px';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    el.style.animationDuration = (2 + Math.random() * 2) + 's';
+    el.style.animationDelay = (Math.random() * 1.5) + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+  }
+}
+
+// ── Celebration ──
+function showCelebration(name, score) {
+  document.getElementById('celebName').textContent = name;
+  document.getElementById('celebScore').textContent = score;
+  const cel = document.getElementById('celebration');
+  cel.classList.add('show');
+  playCelebSound();
+  spawnConfetti();
+  setTimeout(() => cel.classList.remove('show'), 3500);
+}
+
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  document.getElementById('dateDisplay').textContent =
+    now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ── Firebase Listener ──
+scoresRef.on('value', (snapshot) => {
+  const oldKeys = new Set(entries.map(e => e.key));
+  entries = [];
+  const data = snapshot.val();
+  if (data) {
+    Object.keys(data).forEach(key => {
+      entries.push({ key, ...data[key] });
+    });
+  }
+
+  // Detect new entries for highlight
+  highlightKeys = new Set();
+  entries.forEach(e => {
+    if (!oldKeys.has(e.key)) highlightKeys.add(e.key);
+  });
+
+  // Check for new #1
+  const sorted = [...entries].sort((a, b) => b.score - a.score);
+  const newTopKey = sorted.length > 0 ? sorted[0].key : null;
+  if (newTopKey && newTopKey !== prevTopKey && prevTopKey !== null && highlightKeys.has(newTopKey)) {
+    showCelebration(sorted[0].name, sorted[0].score);
+  }
+  prevTopKey = newTopKey;
+
+  if (highlightKeys.size > 0) playDartSound();
+
+  setStatus(true);
+  render();
+
+  // Clear highlights after animation
+  setTimeout(() => { highlightKeys.clear(); }, 2000);
+}, (error) => {
+  console.error('Firebase error:', error);
+  setStatus(false);
+});
+
+function setStatus(connected) {
+  document.getElementById('statusDot').classList.toggle('connected', connected);
+  document.getElementById('statusText').textContent = connected
+    ? 'Live \u2022 ' + entries.length + ' player' + (entries.length !== 1 ? 's' : '')
+    : 'Disconnected';
+}
+
+// ── Admin ──
+function handleAdminClick() {
+  if (isAdmin) {
+    document.getElementById('adminPanel').classList.toggle('show');
+    render();
+  } else {
+    document.getElementById('loginModal').classList.add('show');
+    document.getElementById('passInput').value = '';
+    document.getElementById('loginError').textContent = '';
+    setTimeout(() => document.getElementById('passInput').focus(), 100);
+  }
+}
+
+function attemptLogin() {
+  if (document.getElementById('passInput').value === ADMIN_PASS) {
+    isAdmin = true;
+    document.getElementById('loginModal').classList.remove('show');
+    document.getElementById('adminPanel').classList.add('show');
+    document.getElementById('adminBtn').classList.add('logged-in');
+    document.getElementById('adminBtn').textContent = 'ADMIN \u2713';
+    render();
+  } else {
+    document.getElementById('loginError').textContent = 'Wrong password';
+    document.getElementById('passInput').value = '';
+    document.getElementById('passInput').focus();
+  }
+}
+
+function logout() {
+  isAdmin = false;
+  document.getElementById('adminPanel').classList.remove('show');
+  document.getElementById('adminBtn').classList.remove('logged-in');
+  document.getElementById('adminBtn').textContent = 'ADMIN';
+  render();
+}
+
+function closeModal() {
+  document.getElementById('loginModal').classList.remove('show');
+}
+
+function addEntry() {
+  const nameEl = document.getElementById('addName');
+  const scoreEl = document.getElementById('addScore');
+  const name = nameEl.value.trim();
+  const score = parseInt(scoreEl.value);
+  if (!name) { alert('Enter a player name'); nameEl.focus(); return; }
+  if (isNaN(score) || score < 0) { alert('Enter a valid score'); scoreEl.focus(); return; }
+
+  scoresRef.push({
+    name, score,
+    date: new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+  }).then(() => {
+    nameEl.value = ''; scoreEl.value = ''; nameEl.focus();
+  }).catch(err => {
+    alert('Save failed: ' + err.message);
+  });
+}
+
+function deleteEntry(key) {
+  if (confirm('Delete this score?')) scoresRef.child(key).remove();
+}
+
+function clearAll() { scoresRef.remove(); }
+
+// ── Render ──
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function render() {
+  const sorted = [...entries].sort((a, b) => b.score - a.score);
+  renderPodium(sorted.slice(0, 3));
+  renderList(sorted.slice(3), 3); // start rank from 4
+  startAutoScroll();
+}
+
+function renderPodium(top3) {
+  const podium = document.getElementById('podium');
+  const slots = [
+    top3[1] || null, // silver (left)
+    top3[0] || null, // gold (center)
+    top3[2] || null, // bronze (right)
+  ];
+  const classes = ['p2', 'p1', 'p3'];
+  const medals = ['\uD83E\uDD48', '\uD83E\uDD47', '\uD83E\uDD49'];
+
+  podium.innerHTML = slots.map((p, i) => {
+    if (!p) return '<div class="podium-slot ' + classes[i] + ' empty">' +
+      '<div class="podium-medal">' + medals[i] + '</div>' +
+      '<div class="podium-name">---</div>' +
+      '<div class="podium-score">-</div>' +
+      '<div class="podium-block"></div></div>';
+
+    return '<div class="podium-slot ' + classes[i] + '">' +
+      '<div class="podium-medal">' + medals[i] + '</div>' +
+      '<div class="podium-name">' + escHtml(p.name) + '</div>' +
+      '<div class="podium-score">' + p.score + '</div>' +
+      '<div class="podium-block"></div>' +
+      (isAdmin ? '<button class="btn-delete-sm" onclick="deleteEntry(\'' + p.key + '\')" style="margin-top:4px">\u2715</button>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function renderList(rest, startRank) {
+  const listInner = document.getElementById('listInner');
+  const listHeader = document.getElementById('listHeader');
+
+  if (rest.length === 0) {
+    listHeader.style.display = 'none';
+    listInner.innerHTML = '';
+    return;
+  }
+
+  listHeader.style.display = 'flex';
+
+  listInner.innerHTML = rest.map((entry, i) => {
+    const rank = startRank + i + 1;
+    const hl = highlightKeys.has(entry.key) ? ' highlight' : '';
+    const deleteBtn = isAdmin
+      ? '<button class="btn-delete-sm" onclick="deleteEntry(\'' + entry.key + '\')">\u2715</button>'
+      : '';
+
+    return '<div class="list-row' + hl + '">' +
+      '<div class="list-rank">' + rank + '</div>' +
+      '<div class="list-name">' + escHtml(entry.name) + '</div>' +
+      '<div class="list-date">' + (entry.date || '') + '</div>' +
+      '<div class="list-score">' + entry.score + '</div>' +
+      deleteBtn +
+    '</div>';
+  }).join('');
+}
+
+// ── Auto-scroll ──
+function startAutoScroll() {
+  clearInterval(scrollTimer);
+  scrollOffset = 0;
+
+  const wrap = document.getElementById('listWrap');
+  const inner = document.getElementById('listInner');
+
+  // Reset position
+  inner.style.transform = 'translateY(0)';
+
+  // Wait a tick for layout to settle
+  requestAnimationFrame(() => {
+    const wrapH = wrap.offsetHeight;
+    const innerH = inner.scrollHeight;
+
+    // Only scroll if content overflows
+    if (innerH <= wrapH || wrapH <= 0) return;
+
+    const maxScroll = innerH - wrapH;
+    let direction = 1; // 1 = scrolling up, -1 = scrolling down
+    let pauseCount = 0;
+    const ROW_HEIGHT = inner.firstChild ? inner.firstChild.offsetHeight : 44;
+    const PAUSE_TICKS = 4; // pause at top/bottom
+
+    scrollTimer = setInterval(() => {
+      if (pauseCount > 0) {
+        pauseCount--;
+        return;
+      }
+
+      scrollOffset += ROW_HEIGHT * direction;
+
+      if (scrollOffset >= maxScroll) {
+        scrollOffset = maxScroll;
+        direction = -1;
+        pauseCount = PAUSE_TICKS;
+      } else if (scrollOffset <= 0) {
+        scrollOffset = 0;
+        direction = 1;
+        pauseCount = PAUSE_TICKS;
+      }
+
+      inner.style.transform = 'translateY(-' + scrollOffset + 'px)';
+    }, 2000);
+  });
+}
+
+window.addEventListener('resize', render);
+
+// ── Video Fallback ──
+const video = document.getElementById('videoBg');
+video.play().catch(() => {
+  video.style.display = 'none';
+  document.getElementById('videoFallback').classList.add('show');
+});
+
+// ── Hide cursor ──
+let cursorTimer;
+document.addEventListener('mousemove', () => {
+  document.body.style.cursor = 'default';
+  clearTimeout(cursorTimer);
+  cursorTimer = setTimeout(() => { document.body.style.cursor = 'none'; }, 3000);
+});
+
+render();
+</script>
 </body>
 </html>
