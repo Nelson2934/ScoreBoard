@@ -21,93 +21,121 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
   body {
     background: #000;
     color: var(--gxo-text);
     font-family: 'Space Mono', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
   }
 
   /* ── VIDEO BACKGROUND ── */
   .video-bg {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     object-fit: cover;
     z-index: 0;
-    opacity: 0.45;
+    opacity: 0.4;
   }
 
   .video-overlay {
     position: fixed;
     inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.6) 100%);
+    background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.7) 100%);
     z-index: 0;
     pointer-events: none;
   }
 
+  .video-fallback {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(255,58,0,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 80%, rgba(255,58,0,0.08) 0%, transparent 50%),
+      #0A0A0A;
+    display: none;
+  }
+
+  .video-fallback.show { display: block; }
+
+  /* ── FULL PAGE LAYOUT ── */
   .app {
     position: relative;
     z-index: 1;
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 32px 16px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 32px;
+    overflow: hidden;
   }
 
+  /* ── HEADER (compact) ── */
   header {
     text-align: center;
-    margin-bottom: 48px;
+    flex-shrink: 0;
+    padding-bottom: 12px;
+  }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
   }
 
   .gxo-logo {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 80px;
-    letter-spacing: 16px;
+    font-size: 56px;
+    letter-spacing: 12px;
     color: var(--gxo-orange);
-    text-shadow: 0 0 40px var(--gxo-orange-glow), 0 0 80px rgba(255,58,0,0.15);
+    text-shadow: 0 0 40px var(--gxo-orange-glow);
     line-height: 1;
-    animation: logoIn 0.6s ease-out;
+  }
+
+  .header-divider {
+    width: 2px;
+    height: 36px;
+    background: var(--gxo-orange);
+    opacity: 0.5;
+  }
+
+  .title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 8px;
+    color: var(--gxo-text);
   }
 
   .tagline {
-    font-size: 10px;
-    letter-spacing: 6px;
+    font-size: 9px;
+    letter-spacing: 5px;
     text-transform: uppercase;
     color: var(--gxo-muted);
     margin-top: 4px;
   }
 
-  .title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 32px;
-    letter-spacing: 10px;
-    color: var(--gxo-text);
-    margin-top: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-  }
-
-  .title::before, .title::after {
-    content: '';
-    width: 40px;
+  .divider {
     height: 2px;
-    background: var(--gxo-orange);
+    background: linear-gradient(90deg, transparent, var(--gxo-orange), transparent);
+    margin: 8px 0;
+    flex-shrink: 0;
   }
 
+  /* ── ADMIN TOGGLE ── */
   .admin-toggle {
     position: fixed;
-    top: 16px;
-    right: 16px;
+    top: 12px;
+    right: 12px;
     font-family: 'Space Mono', monospace;
     font-size: 11px;
     letter-spacing: 1px;
-    padding: 8px 16px;
-    background: rgba(20, 20, 20, 0.7);
+    padding: 6px 14px;
+    background: rgba(20,20,20,0.7);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     color: var(--gxo-muted);
@@ -117,15 +145,8 @@
     transition: all 0.2s;
   }
 
-  .admin-toggle:hover {
-    border-color: var(--gxo-orange);
-    color: var(--gxo-text);
-  }
-
-  .admin-toggle.logged-in {
-    border-color: var(--gxo-orange);
-    color: var(--gxo-orange);
-  }
+  .admin-toggle:hover { border-color: var(--gxo-orange); color: var(--gxo-text); }
+  .admin-toggle.logged-in { border-color: var(--gxo-orange); color: var(--gxo-orange); }
 
   /* ── MODAL ── */
   .modal-bg {
@@ -136,20 +157,18 @@
     z-index: 100;
     justify-content: center;
     align-items: center;
-    animation: fadeIn 0.2s;
   }
 
   .modal-bg.show { display: flex; }
 
   .modal {
-    background: rgba(20, 20, 20, 0.85);
+    background: rgba(20,20,20,0.9);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255,58,0,0.2);
     padding: 40px;
     width: 340px;
     text-align: center;
-    animation: scaleIn 0.3s ease-out;
   }
 
   .modal h2 {
@@ -171,17 +190,11 @@
     outline: none;
     margin-bottom: 16px;
     text-align: center;
-    transition: border-color 0.2s;
   }
 
   .modal input:focus { border-color: var(--gxo-orange); }
 
-  .modal-error {
-    color: #FF1744;
-    font-size: 11px;
-    margin-bottom: 12px;
-    min-height: 16px;
-  }
+  .modal-error { color: #FF1744; font-size: 11px; margin-bottom: 12px; min-height: 16px; }
 
   .btn-login {
     font-family: 'Bebas Neue', sans-serif;
@@ -192,14 +205,10 @@
     color: #fff;
     border: none;
     cursor: pointer;
-    transition: all 0.2s;
     width: 100%;
   }
 
-  .btn-login:hover {
-    background: #e63300;
-    box-shadow: 0 4px 20px var(--gxo-orange-glow);
-  }
+  .btn-login:hover { background: #e63300; box-shadow: 0 4px 20px var(--gxo-orange-glow); }
 
   .modal-close {
     font-family: 'Space Mono', monospace;
@@ -209,152 +218,125 @@
     border: none;
     cursor: pointer;
     margin-top: 16px;
-    transition: color 0.2s;
   }
-
-  .modal-close:hover { color: var(--gxo-text); }
 
   /* ── ADMIN PANEL ── */
   .admin-panel {
     display: none;
-    background: rgba(20, 20, 20, 0.75);
+    background: rgba(20,20,20,0.75);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255,58,0,0.2);
-    padding: 24px;
-    margin-bottom: 32px;
-    animation: rowIn 0.3s ease-out;
+    padding: 16px 20px;
+    flex-shrink: 0;
+    margin-bottom: 8px;
   }
 
   .admin-panel.show { display: block; }
 
   .admin-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     letter-spacing: 4px;
     color: var(--gxo-orange);
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
 
   .admin-row {
     display: flex;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
   .admin-row input {
     flex: 1;
     font-family: 'Space Mono', monospace;
     font-size: 13px;
-    padding: 10px 14px;
+    padding: 8px 12px;
     background: var(--gxo-dark);
     color: var(--gxo-text);
     border: 1px solid var(--gxo-border);
     outline: none;
-    transition: border-color 0.2s;
   }
 
   .admin-row input:focus { border-color: var(--gxo-orange); }
   .admin-row input::placeholder { color: var(--gxo-muted); }
-  .admin-row input[type="number"] { width: 100px; flex: none; }
+  .admin-row input[type="number"] { width: 90px; flex: none; }
 
   .btn-admin {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px;
+    font-size: 15px;
     letter-spacing: 3px;
-    padding: 10px 24px;
+    padding: 8px 20px;
     background: var(--gxo-orange);
     color: #fff;
     border: none;
     cursor: pointer;
-    transition: all 0.2s;
     white-space: nowrap;
   }
 
-  .btn-admin:hover {
-    background: #e63300;
-    box-shadow: 0 4px 16px var(--gxo-orange-glow);
-  }
+  .btn-admin:hover { background: #e63300; }
 
   .btn-clear {
     font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    padding: 8px 16px;
+    font-size: 10px;
+    padding: 6px 12px;
     background: none;
     color: var(--gxo-muted);
     border: 1px solid var(--gxo-border);
     cursor: pointer;
-    transition: all 0.2s;
   }
 
-  .btn-clear:hover {
-    color: #FF1744;
-    border-color: #FF1744;
-  }
+  .btn-clear:hover { color: #FF1744; border-color: #FF1744; }
 
-  /* ── STATUS ── */
-  .status-bar {
+  /* ── SCOREBOARD AREA ── */
+  .board-wrap {
+    flex: 1;
+    overflow: hidden;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 16px;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--gxo-muted);
+    flex-direction: column;
+    min-height: 0;
   }
 
-  .status-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #FF1744;
-  }
-
-  .status-dot.connected {
-    background: #00C853;
-    box-shadow: 0 0 6px rgba(0,200,83,0.5);
-  }
-
-  /* ── SCOREBOARD ── */
   .board-empty {
     text-align: center;
-    padding: 80px 20px;
+    padding: 60px 20px;
     color: var(--gxo-muted);
-    font-size: 13px;
+    font-size: 14px;
     letter-spacing: 2px;
-    background: rgba(10, 10, 10, 0.5);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
   }
 
   .board-empty .icon {
     font-size: 48px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     opacity: 0.25;
+  }
+
+  /* ── MULTI-COLUMN GRID for many players ── */
+  .board-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    flex: 1;
+    align-content: flex-start;
+    overflow: hidden;
   }
 
   .score-row {
     display: flex;
     align-items: center;
-    padding: 18px 20px;
     border-bottom: 1px solid rgba(255,255,255,0.06);
-    transition: background 0.2s;
-    animation: rowIn 0.3s ease-out;
     background: rgba(10, 10, 10, 0.55);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: background 0.2s;
+    width: 100%;
   }
 
-  .score-row:hover { background: rgba(20, 20, 20, 0.7); }
   .score-row.top-1 { background: rgba(255,58,0,0.15); }
-  .score-row.top-1:hover { background: rgba(255,58,0,0.22); }
 
   .rank-num {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    min-width: 48px;
     text-align: center;
     color: var(--gxo-muted);
   }
@@ -363,37 +345,29 @@
   .top-2 .rank-num { color: var(--gxo-silver); }
   .top-3 .rank-num { color: var(--gxo-bronze); }
 
-  .medal {
-    font-size: 20px;
-    min-width: 32px;
-    text-align: center;
-  }
+  .medal { text-align: center; }
 
-  .player-info {
-    flex: 1;
-    margin-left: 8px;
-  }
+  .player-info { flex: 1; min-width: 0; }
 
   .player-name {
     font-weight: 700;
-    font-size: 16px;
     letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .top-1 .player-name { color: var(--gxo-orange); }
 
   .player-date {
-    font-size: 10px;
     color: var(--gxo-muted);
-    margin-top: 2px;
+    margin-top: 1px;
   }
 
   .player-score {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 42px;
     letter-spacing: 2px;
     text-align: right;
-    min-width: 80px;
   }
 
   .top-1 .player-score {
@@ -405,80 +379,51 @@
     background: none;
     border: 1px solid var(--gxo-border);
     color: var(--gxo-muted);
-    font-size: 12px;
-    padding: 6px 10px;
+    padding: 4px 8px;
     cursor: pointer;
-    margin-left: 12px;
-    transition: all 0.15s;
+    margin-left: 8px;
     font-family: 'Space Mono', monospace;
+    font-size: 11px;
   }
 
-  .btn-delete:hover {
-    color: #FF1744;
-    border-color: #FF1744;
-  }
+  .btn-delete:hover { color: #FF1744; border-color: #FF1744; }
 
-  .divider {
-    height: 2px;
-    background: var(--gxo-orange);
-    margin-bottom: 4px;
-  }
-
-  footer {
-    text-align: center;
-    padding: 48px 0 20px;
+  /* ── STATUS BAR (bottom) ── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 0 0;
     font-size: 10px;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--gxo-muted);
+    flex-shrink: 0;
   }
 
-  footer span { color: var(--gxo-orange); }
-
-  @keyframes logoIn { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes rowIn { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
-  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-  @keyframes scaleIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
-
-  /* ── TV DISPLAY MODE (large screens) ── */
-  @media (min-width: 1200px) {
-    .app { max-width: 1000px; }
-    .gxo-logo { font-size: 120px; letter-spacing: 24px; }
-    .title { font-size: 44px; letter-spacing: 14px; }
-    .player-name { font-size: 22px; }
-    .player-score { font-size: 60px; }
-    .rank-num { font-size: 38px; min-width: 64px; }
-    .medal { font-size: 28px; min-width: 44px; }
-    .player-date { font-size: 13px; }
-    .score-row { padding: 24px 28px; }
-    .divider { height: 3px; }
-    .status-bar { font-size: 12px; }
-    .tagline { font-size: 13px; letter-spacing: 8px; }
-    footer { font-size: 12px; }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #FF1744;
   }
 
-  /* ── MOBILE ── */
-  @media (max-width: 500px) {
-    .gxo-logo { font-size: 56px; letter-spacing: 10px; }
-    .title { font-size: 22px; letter-spacing: 6px; }
-    .player-score { font-size: 32px; }
+  .status-dot.connected {
+    background: #00C853;
+    box-shadow: 0 0 6px rgba(0,200,83,0.5);
+  }
+
+  @keyframes logoIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── MOBILE (admin on phone) ── */
+  @media (max-width: 600px) {
+    .app { padding: 12px; }
+    .gxo-logo { font-size: 36px; letter-spacing: 8px; }
+    .title { font-size: 18px; letter-spacing: 4px; }
+    .header-divider { height: 24px; }
     .admin-row { flex-wrap: wrap; }
     .admin-row input[type="number"] { flex: 1; }
   }
-
-  /* ── VIDEO FALLBACK ── */
-  .video-fallback {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background:
-      radial-gradient(ellipse at 30% 20%, rgba(255,58,0,0.12) 0%, transparent 60%),
-      radial-gradient(ellipse at 70% 80%, rgba(255,58,0,0.08) 0%, transparent 50%),
-      #0A0A0A;
-    display: none;
-  }
-
-  .video-fallback.show { display: block; }
 </style>
 </head>
 <body>
@@ -493,15 +438,13 @@
 
 <div class="app">
   <header>
-    <div class="gxo-logo">GXO</div>
-    <div class="tagline">Logistics at full potential</div>
-    <div class="title">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="10" stroke="#FF3A00" stroke-width="1.5" opacity="0.3"/>
-        <circle cx="12" cy="12" r="6" stroke="#FF3A00" stroke-width="1.5" opacity="0.5"/>
-        <circle cx="12" cy="12" r="2" fill="#FF3A00"/>
-      </svg>
-      Darts High Scores
+    <div class="header-row">
+      <div class="gxo-logo">GXO</div>
+      <div class="header-divider"></div>
+      <div>
+        <div class="title">Darts High Scores</div>
+        <div class="tagline">Logistics at full potential</div>
+      </div>
     </div>
   </header>
 
@@ -518,15 +461,18 @@
     </div>
   </div>
 
+  <div class="divider"></div>
+
+  <div class="board-wrap">
+    <div class="board-grid" id="board">
+      <div class="board-empty"><div class="icon">&#127919;</div><div>Connecting...</div></div>
+    </div>
+  </div>
+
   <div class="status-bar">
     <div class="status-dot" id="statusDot"></div>
     <span id="statusText">Connecting...</span>
   </div>
-
-  <div class="divider"></div>
-  <div id="board"><div class="board-empty"><div class="icon">&#127919;</div><div>Connecting to database...</div></div></div>
-
-  <footer>Powered by <span>GXO</span> &mdash; Game On</footer>
 </div>
 
 <!-- Login Modal -->
@@ -540,13 +486,12 @@
   </div>
 </div>
 
-<!-- Firebase SDK (compat for simplicity in a single HTML file) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
-// ── Firebase Init ──
-const firebaseConfig = {
+// ── Firebase ──
+firebase.initializeApp({
   apiKey: "AIzaSyBAtoiBIjO9YOSpq01NE4PIXfKojIHhoNo",
   authDomain: "gxodarts.firebaseapp.com",
   databaseURL: "https://gxodarts-default-rtdb.firebaseio.com",
@@ -554,18 +499,16 @@ const firebaseConfig = {
   storageBucket: "gxodarts.firebasestorage.app",
   messagingSenderId: "184730926165",
   appId: "1:184730926165:web:29a6c61e991af3783728dc"
-};
+});
 
-firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const scoresRef = db.ref('darts_scores');
 
-// ── State ──
 const ADMIN_PASS = 'gxo2024';
 let isAdmin = false;
-let entries = []; // { key, name, score, date }
+let entries = [];
 
-// ── Firebase Realtime Listener ──
+// ── Realtime Listener ──
 scoresRef.on('value', (snapshot) => {
   entries = [];
   const data = snapshot.val();
@@ -583,20 +526,18 @@ scoresRef.on('value', (snapshot) => {
 
 function setStatus(connected) {
   const dot = document.getElementById('statusDot');
-  const text = document.getElementById('statusText');
-  if (connected) {
-    dot.classList.add('connected');
-    text.textContent = 'Live \u2022 ' + entries.length + ' score' + (entries.length !== 1 ? 's' : '');
-  } else {
-    dot.classList.remove('connected');
-    text.textContent = 'Disconnected';
-  }
+  const txt = document.getElementById('statusText');
+  dot.classList.toggle('connected', connected);
+  txt.textContent = connected
+    ? 'Live \u2022 ' + entries.length + ' player' + (entries.length !== 1 ? 's' : '')
+    : 'Disconnected';
 }
 
-// ── Admin Auth ──
+// ── Admin ──
 function handleAdminClick() {
   if (isAdmin) {
     document.getElementById('adminPanel').classList.toggle('show');
+    render();
   } else {
     document.getElementById('loginModal').classList.add('show');
     document.getElementById('passInput').value = '';
@@ -606,10 +547,9 @@ function handleAdminClick() {
 }
 
 function attemptLogin() {
-  const pass = document.getElementById('passInput').value;
-  if (pass === ADMIN_PASS) {
+  if (document.getElementById('passInput').value === ADMIN_PASS) {
     isAdmin = true;
-    closeModal();
+    document.getElementById('loginModal').classList.remove('show');
     document.getElementById('adminPanel').classList.add('show');
     document.getElementById('adminBtn').classList.add('logged-in');
     document.getElementById('adminBtn').textContent = 'ADMIN \u2713';
@@ -639,86 +579,141 @@ function addEntry() {
   const scoreEl = document.getElementById('addScore');
   const name = nameEl.value.trim();
   const score = parseInt(scoreEl.value);
-
-  if (!name) { alert('Please enter a player name'); nameEl.focus(); return; }
-  if (isNaN(score) || score < 0) { alert('Please enter a valid score'); scoreEl.focus(); return; }
+  if (!name) { alert('Enter a player name'); nameEl.focus(); return; }
+  if (isNaN(score) || score < 0) { alert('Enter a valid score'); scoreEl.focus(); return; }
 
   scoresRef.push({
-    name,
-    score,
+    name, score,
     date: new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
-  })
-  .then(() => {
+  }).then(() => {
     nameEl.value = '';
     scoreEl.value = '';
     nameEl.focus();
-  })
-  .catch((error) => {
-    alert('Failed to save: ' + error.message + '\n\nMake sure your Firebase Database rules allow writes.');
-    console.error('Firebase write error:', error);
+  }).catch((err) => {
+    alert('Save failed: ' + err.message + '\n\nCheck Firebase rules allow writes.');
   });
 }
 
-function deleteEntry(firebaseKey) {
-  if (confirm('Delete this score?')) {
-    scoresRef.child(firebaseKey).remove();
+function deleteEntry(key) {
+  if (confirm('Delete this score?')) scoresRef.child(key).remove();
+}
+
+function clearAll() { scoresRef.remove(); }
+
+// ── Sizing Engine ──
+function calcLayout(count) {
+  // Available height for the board (viewport minus header, divider, status, padding)
+  const vh = window.innerHeight;
+  const headerH = document.querySelector('header').offsetHeight;
+  const adminH = document.getElementById('adminPanel').classList.contains('show')
+    ? document.getElementById('adminPanel').offsetHeight : 0;
+  const chrome = headerH + adminH + 60; // divider + status + padding
+  const available = vh - chrome;
+
+  if (count <= 0) return { cols: 1, rowH: 60, fontSize: 'large' };
+
+  // Try single column first
+  let rowH = Math.floor(available / count);
+
+  // If rows get too small, go multi-column
+  let cols = 1;
+  if (rowH < 36) {
+    cols = 2;
+    rowH = Math.floor(available / Math.ceil(count / 2));
   }
+  if (rowH < 32) {
+    cols = 3;
+    rowH = Math.floor(available / Math.ceil(count / 3));
+  }
+  if (rowH < 28) {
+    cols = 4;
+    rowH = Math.floor(available / Math.ceil(count / 4));
+  }
+
+  // Clamp row height
+  rowH = Math.max(24, Math.min(rowH, 80));
+
+  // Font size tier based on row height
+  let fontSize;
+  if (rowH >= 60) fontSize = 'large';
+  else if (rowH >= 45) fontSize = 'medium';
+  else if (rowH >= 34) fontSize = 'small';
+  else fontSize = 'tiny';
+
+  return { cols, rowH, fontSize };
 }
 
-function clearAll() {
-  scoresRef.remove();
-}
+const SIZES = {
+  large:  { rank: 32, medal: 22, name: 20, date: 10, score: 48, pad: '14px 20px', rankW: 52, medalW: 36, gap: 10 },
+  medium: { rank: 26, medal: 18, name: 16, date: 9,  score: 36, pad: '10px 16px', rankW: 44, medalW: 30, gap: 8 },
+  small:  { rank: 20, medal: 14, name: 13, date: 0,  score: 28, pad: '6px 12px',  rankW: 36, medalW: 24, gap: 6 },
+  tiny:   { rank: 16, medal: 12, name: 11, date: 0,  score: 22, pad: '4px 8px',   rankW: 28, medalW: 20, gap: 4 },
+};
 
-// ── Render ──
 function escHtml(s) {
   const d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
 }
 
+// ── Render ──
 function render() {
   const board = document.getElementById('board');
   const sorted = [...entries].sort((a, b) => b.score - a.score);
-
   setStatus(true);
 
   if (sorted.length === 0) {
-    board.innerHTML = '<div class="board-empty"><div class="icon">&#127919;</div><div>No scores yet</div></div>';
+    board.innerHTML = '<div class="board-empty" style="width:100%"><div class="icon">&#127919;</div><div>No scores yet</div></div>';
     return;
   }
 
+  const layout = calcLayout(sorted.length);
+  const s = SIZES[layout.fontSize];
   const medals = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+  const colWidth = (100 / layout.cols);
 
   board.innerHTML = sorted.map((entry, rank) => {
     const cls = rank < 3 ? 'score-row top-' + (rank + 1) : 'score-row';
-    return '<div class="' + cls + '">' +
-      '<div class="rank-num">' + (rank + 1) + '</div>' +
-      '<div class="medal">' + (rank < 3 ? medals[rank] : '') + '</div>' +
-      '<div class="player-info">' +
-        '<div class="player-name">' + escHtml(entry.name) + '</div>' +
-        '<div class="player-date">' + (entry.date || '') + '</div>' +
+    const dateHtml = s.date > 0
+      ? '<div class="player-date" style="font-size:' + s.date + 'px">' + (entry.date || '') + '</div>'
+      : '';
+    const deleteBtn = isAdmin
+      ? '<button class="btn-delete" style="font-size:' + Math.max(9, s.name - 2) + 'px;padding:2px 6px" onclick="deleteEntry(\'' + entry.key + '\')">\u2715</button>'
+      : '';
+
+    return '<div class="' + cls + '" style="' +
+      'width:' + colWidth + '%;' +
+      'height:' + layout.rowH + 'px;' +
+      'padding:' + s.pad + ';' +
+      '">' +
+      '<div class="rank-num" style="font-size:' + s.rank + 'px;min-width:' + s.rankW + 'px">' + (rank + 1) + '</div>' +
+      '<div class="medal" style="font-size:' + s.medal + 'px;min-width:' + s.medalW + 'px">' + (rank < 3 ? medals[rank] : '') + '</div>' +
+      '<div class="player-info" style="margin-left:' + s.gap + 'px">' +
+        '<div class="player-name" style="font-size:' + s.name + 'px">' + escHtml(entry.name) + '</div>' +
+        dateHtml +
       '</div>' +
-      '<div class="player-score">' + entry.score + '</div>' +
-      (isAdmin ? '<button class="btn-delete" onclick="deleteEntry(\'' + entry.key + '\')">\u2715</button>' : '') +
+      '<div class="player-score" style="font-size:' + s.score + 'px">' + entry.score + '</div>' +
+      deleteBtn +
     '</div>';
   }).join('');
 }
 
-// ── Video Fallback (if TV can't autoplay) ──
+// Re-render on resize so it always fits
+window.addEventListener('resize', render);
+
+// ── Video Fallback ──
 const video = document.getElementById('videoBg');
 video.play().catch(() => {
   video.style.display = 'none';
   document.getElementById('videoFallback').classList.add('show');
 });
 
-// ── Hide cursor after 3s inactivity (cleaner on TV) ──
+// ── Hide cursor on TV after inactivity ──
 let cursorTimer;
 document.addEventListener('mousemove', () => {
   document.body.style.cursor = 'default';
   clearTimeout(cursorTimer);
-  cursorTimer = setTimeout(() => {
-    document.body.style.cursor = 'none';
-  }, 3000);
+  cursorTimer = setTimeout(() => { document.body.style.cursor = 'none'; }, 3000);
 });
 
 render();
