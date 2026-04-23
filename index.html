@@ -486,13 +486,13 @@
 <script>
 // ── Firebase Init ──
 const firebaseConfig = {
-  apiKey: "AIzaSyDJoo6khQ59s_BG0tfE4pmaWytncRN64Ao",
-  authDomain: "case-the-ace.firebaseapp.com",
-  databaseURL: "https://case-the-ace-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "case-the-ace",
-  storageBucket: "case-the-ace.firebasestorage.app",
-  messagingSenderId: "662987665662",
-  appId: "1:662987665662:web:34cf928b2b564b850675af"
+  apiKey: "AIzaSyBAtoiBIjO9YOSpq01NE4PIXfKojIHhoNo",
+  authDomain: "gxodarts.firebaseapp.com",
+  databaseURL: "https://gxodarts-default-rtdb.firebaseio.com",
+  projectId: "gxodarts",
+  storageBucket: "gxodarts.firebasestorage.app",
+  messagingSenderId: "184730926165",
+  appId: "1:184730926165:web:29a6c61e991af3783728dc"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -578,17 +578,24 @@ function addEntry() {
   const scoreEl = document.getElementById('addScore');
   const name = nameEl.value.trim();
   const score = parseInt(scoreEl.value);
-  if (!name || isNaN(score) || score < 0) return;
+
+  if (!name) { alert('Please enter a player name'); nameEl.focus(); return; }
+  if (isNaN(score) || score < 0) { alert('Please enter a valid score'); scoreEl.focus(); return; }
 
   scoresRef.push({
     name,
     score,
     date: new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+  })
+  .then(() => {
+    nameEl.value = '';
+    scoreEl.value = '';
+    nameEl.focus();
+  })
+  .catch((error) => {
+    alert('Failed to save: ' + error.message + '\n\nMake sure your Firebase Database rules allow writes.');
+    console.error('Firebase write error:', error);
   });
-
-  nameEl.value = '';
-  scoreEl.value = '';
-  nameEl.focus();
 }
 
 function deleteEntry(firebaseKey) {
