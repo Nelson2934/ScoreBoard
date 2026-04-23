@@ -22,19 +22,30 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: var(--gxo-dark);
+    background: #000;
     color: var(--gxo-text);
     font-family: 'Space Mono', monospace;
     min-height: 100vh;
+    overflow-x: hidden;
   }
 
-  body::before {
-    content: '';
+  /* ── VIDEO BACKGROUND ── */
+  .video-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.45;
+  }
+
+  .video-overlay {
     position: fixed;
     inset: 0;
-    background:
-      repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,58,0,0.02) 40px, rgba(255,58,0,0.02) 41px),
-      repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(255,58,0,0.02) 40px, rgba(255,58,0,0.02) 41px);
+    background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.6) 100%);
+    z-index: 0;
     pointer-events: none;
   }
 
@@ -96,9 +107,11 @@
     font-size: 11px;
     letter-spacing: 1px;
     padding: 8px 16px;
-    background: var(--gxo-card);
+    background: rgba(20, 20, 20, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: var(--gxo-muted);
-    border: 1px solid var(--gxo-border);
+    border: 1px solid rgba(255,255,255,0.1);
     cursor: pointer;
     z-index: 50;
     transition: all 0.2s;
@@ -129,8 +142,10 @@
   .modal-bg.show { display: flex; }
 
   .modal {
-    background: var(--gxo-card);
-    border: 1px solid var(--gxo-border);
+    background: rgba(20, 20, 20, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,58,0,0.2);
     padding: 40px;
     width: 340px;
     text-align: center;
@@ -202,8 +217,10 @@
   /* ── ADMIN PANEL ── */
   .admin-panel {
     display: none;
-    background: var(--gxo-card);
-    border: 1px solid var(--gxo-border);
+    background: rgba(20, 20, 20, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,58,0,0.2);
     padding: 24px;
     margin-bottom: 32px;
     animation: rowIn 0.3s ease-out;
@@ -307,6 +324,9 @@
     color: var(--gxo-muted);
     font-size: 13px;
     letter-spacing: 2px;
+    background: rgba(10, 10, 10, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   .board-empty .icon {
@@ -319,14 +339,17 @@
     display: flex;
     align-items: center;
     padding: 18px 20px;
-    border-bottom: 1px solid var(--gxo-border);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
     transition: background 0.2s;
     animation: rowIn 0.3s ease-out;
+    background: rgba(10, 10, 10, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
-  .score-row:hover { background: rgba(255,255,255,0.02); }
-  .score-row.top-1 { background: rgba(255,58,0,0.08); }
-  .score-row.top-1:hover { background: rgba(255,58,0,0.12); }
+  .score-row:hover { background: rgba(20, 20, 20, 0.7); }
+  .score-row.top-1 { background: rgba(255,58,0,0.15); }
+  .score-row.top-1:hover { background: rgba(255,58,0,0.22); }
 
   .rank-num {
     font-family: 'Bebas Neue', sans-serif;
@@ -427,6 +450,11 @@
 </style>
 </head>
 <body>
+
+<video class="video-bg" autoplay muted loop playsinline>
+  <source src="1.mp4" type="video/mp4">
+</video>
+<div class="video-overlay"></div>
 
 <button class="admin-toggle" id="adminBtn" onclick="handleAdminClick()">ADMIN</button>
 
