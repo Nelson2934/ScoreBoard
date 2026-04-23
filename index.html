@@ -607,7 +607,7 @@ function calcLayout(count) {
   const headerH = document.querySelector('header').offsetHeight;
   const adminH = document.getElementById('adminPanel').classList.contains('show')
     ? document.getElementById('adminPanel').offsetHeight : 0;
-  const chrome = headerH + adminH + 60; // divider + status + padding
+  const chrome = headerH + adminH + 90; // divider + status + padding + safety margin
   const available = vh - chrome;
 
   if (count <= 0) return { cols: 1, rowH: 60, fontSize: 'large' };
