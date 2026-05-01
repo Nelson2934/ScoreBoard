@@ -126,69 +126,67 @@
     flex-shrink: 0;
   }
 
-  /* ── PODIUM ── */
-  .podium {
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 12px;
-    padding: 16px 0 12px;
-    flex-shrink: 0;
-  }
-
-  .podium-slot {
+  /* ── WINNER BANNER ── */
+  .winner-banner {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 200px;
-    transition: all 0.4s;
-  }
-
-  .podium-slot.empty { opacity: 0.15; }
-
-  .podium-medal { font-size: 28px; margin-bottom: 4px; }
-  .podium-slot.p1 .podium-medal { font-size: 36px; }
-
-  .podium-name {
-    font-family: 'Bebas Neue', sans-serif;
-    letter-spacing: 3px;
+    justify-content: center;
+    padding: 16px 0 12px;
+    flex-shrink: 0;
     text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
   }
 
-  .podium-slot.p1 .podium-name {
-    font-size: 32px;
-    color: var(--gxo-orange);
-    text-shadow: 0 0 20px var(--gxo-orange-glow);
-  }
-  .podium-slot.p2 .podium-name { font-size: 24px; color: var(--gxo-silver); }
-  .podium-slot.p3 .podium-name { font-size: 24px; color: var(--gxo-bronze); }
-
-  .podium-score {
+  .winner-label {
     font-family: 'Bebas Neue', sans-serif;
-    letter-spacing: 2px;
-    margin-top: 2px;
+    font-size: 16px;
+    letter-spacing: 8px;
+    color: var(--gxo-gold);
+    margin-bottom: 6px;
   }
 
-  .podium-slot.p1 .podium-score { font-size: 52px; color: var(--gxo-orange); text-shadow: 0 0 30px var(--gxo-orange-glow); }
-  .podium-slot.p2 .podium-score { font-size: 38px; color: var(--gxo-silver); }
-  .podium-slot.p3 .podium-score { font-size: 38px; color: var(--gxo-bronze); }
+  .winner-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 4px;
+    color: var(--gxo-orange);
+    text-shadow: 0 0 30px var(--gxo-orange-glow);
+    line-height: 1.1;
+  }
 
-  .podium-block {
-    width: 100%;
-    border-top: 3px solid;
+  .winner-text span {
+    color: #fff;
+  }
+
+  .winner-score-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: var(--gxo-muted);
     margin-top: 6px;
-    background: rgba(255,255,255,0.03);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    text-transform: uppercase;
   }
 
-  .podium-slot.p1 .podium-block { height: 60px; border-color: var(--gxo-gold); background: rgba(255,215,0,0.06); }
-  .podium-slot.p2 .podium-block { height: 40px; border-color: var(--gxo-silver); background: rgba(192,192,192,0.04); }
-  .podium-slot.p3 .podium-block { height: 28px; border-color: var(--gxo-bronze); background: rgba(205,127,50,0.04); }
+  .winner-score-label strong {
+    color: var(--gxo-gold);
+    font-size: 18px;
+  }
+
+  .winner-img {
+    margin-top: 14px;
+    max-height: 160px;
+    max-width: 90%;
+    object-fit: contain;
+    opacity: 0.92;
+  }
+
+  .winner-empty {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 6px;
+    color: var(--gxo-muted);
+    padding: 20px 0;
+  }
 
   /* ── SCROLLING LIST ── */
   .list-header {
@@ -511,11 +509,8 @@
     .gxo-logo { font-size: 32px; letter-spacing: 6px; }
     .header-title { font-size: 16px; letter-spacing: 4px; }
     .live-clock { font-size: 24px; }
-    .podium-slot { width: 120px; }
-    .podium-slot.p1 .podium-name { font-size: 22px; }
-    .podium-slot.p2 .podium-name, .podium-slot.p3 .podium-name { font-size: 18px; }
-    .podium-slot.p1 .podium-score { font-size: 36px; }
-    .podium-slot.p2 .podium-score, .podium-slot.p3 .podium-score { font-size: 28px; }
+    .winner-text { font-size: 26px; }
+    .winner-img { max-height: 100px; }
     .celeb-name { font-size: 48px; }
     .celeb-score { font-size: 32px; }
     .admin-row { flex-wrap: wrap; }
@@ -575,8 +570,8 @@
 
   <div class="divider"></div>
 
-  <!-- Podium for top 3 -->
-  <div class="podium" id="podium"></div>
+  <!-- Winner Banner -->
+  <div class="winner-banner" id="podium"></div>
 
   <div class="divider"></div>
 
@@ -586,7 +581,7 @@
     <span style="text-align:right">SCORE</span>
   </div>
 
-  <!-- Scrolling list for 4th place onwards -->
+  <!-- Scrolling list for 2nd place onwards -->
   <div class="list-wrap" id="listWrap">
     <div class="list-inner" id="listInner"></div>
   </div>
@@ -629,13 +624,13 @@ const scoresRef = db.ref('darts_scores');
 const ADMIN_PASS = 'gxo2024';
 let isAdmin = false;
 let entries = [];
-let prevTopKey = null; // track #1 for celebration
+let prevTopKey = null;
 let soundOn = false;
 let scrollOffset = 0;
 let scrollTimer = null;
 let highlightKeys = new Set();
 
-// ── Audio (Web Audio API — no files needed) ──
+// ── Audio ──
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playDartSound() {
@@ -728,13 +723,11 @@ scoresRef.on('value', (snapshot) => {
     });
   }
 
-  // Detect new entries for highlight
   highlightKeys = new Set();
   entries.forEach(e => {
     if (!oldKeys.has(e.key)) highlightKeys.add(e.key);
   });
 
-  // Check for new #1
   const sorted = [...entries].sort((a, b) => b.score - a.score);
   const newTopKey = sorted.length > 0 ? sorted[0].key : null;
   if (newTopKey && newTopKey !== prevTopKey && prevTopKey !== null && highlightKeys.has(newTopKey)) {
@@ -747,7 +740,6 @@ scoresRef.on('value', (snapshot) => {
   setStatus(true);
   render();
 
-  // Clear highlights after animation
   setTimeout(() => { highlightKeys.clear(); }, 2000);
 }, (error) => {
   console.error('Firebase error:', error);
@@ -834,36 +826,25 @@ function escHtml(s) {
 
 function render() {
   const sorted = [...entries].sort((a, b) => b.score - a.score);
-  renderPodium(sorted.slice(0, 3));
-  renderList(sorted.slice(3), 3); // start rank from 4
+  renderWinner(sorted[0] || null);
+  renderList(sorted.slice(1), 1);
   startAutoScroll();
 }
 
-function renderPodium(top3) {
-  const podium = document.getElementById('podium');
-  const slots = [
-    top3[1] || null, // silver (left)
-    top3[0] || null, // gold (center)
-    top3[2] || null, // bronze (right)
-  ];
-  const classes = ['p2', 'p1', 'p3'];
-  const medals = ['\uD83E\uDD48', '\uD83E\uDD47', '\uD83E\uDD49'];
-
-  podium.innerHTML = slots.map((p, i) => {
-    if (!p) return '<div class="podium-slot ' + classes[i] + ' empty">' +
-      '<div class="podium-medal">' + medals[i] + '</div>' +
-      '<div class="podium-name">---</div>' +
-      '<div class="podium-score">-</div>' +
-      '<div class="podium-block"></div></div>';
-
-    return '<div class="podium-slot ' + classes[i] + '">' +
-      '<div class="podium-medal">' + medals[i] + '</div>' +
-      '<div class="podium-name">' + escHtml(p.name) + '</div>' +
-      '<div class="podium-score">' + p.score + '</div>' +
-      '<div class="podium-block"></div>' +
-      (isAdmin ? '<button class="btn-delete-sm" onclick="deleteEntry(\'' + p.key + '\')" style="margin-top:4px">\u2715</button>' : '') +
-    '</div>';
-  }).join('');
+function renderWinner(winner) {
+  const el = document.getElementById('podium');
+  if (!winner) {
+    el.innerHTML = '<div class="winner-empty">No scores yet — add the first one!</div>';
+    return;
+  }
+  el.innerHTML =
+    '<div class="winner-label">\u2605 CURRENT LEADER \u2605</div>' +
+    '<div class="winner-text">' +
+      '<span>Well done to </span>' + escHtml(winner.name) + '<span> for winning</span>' +
+    '</div>' +
+    '<div class="winner-score-label">with a score of <strong>' + winner.score + '</strong></div>' +
+    '<img class="winner-img" src="2.png" alt="Winner trophy">' +
+    (isAdmin ? '<br><button class="btn-delete-sm" onclick="deleteEntry(\'' + winner.key + '\')" style="margin-top:8px">\u2715 Remove leader</button>' : '');
 }
 
 function renderList(rest, startRank) {
@@ -903,28 +884,22 @@ function startAutoScroll() {
   const wrap = document.getElementById('listWrap');
   const inner = document.getElementById('listInner');
 
-  // Reset position
   inner.style.transform = 'translateY(0)';
 
-  // Wait a tick for layout to settle
   requestAnimationFrame(() => {
     const wrapH = wrap.offsetHeight;
     const innerH = inner.scrollHeight;
 
-    // Only scroll if content overflows
     if (innerH <= wrapH || wrapH <= 0) return;
 
     const maxScroll = innerH - wrapH;
-    let direction = 1; // 1 = scrolling up, -1 = scrolling down
+    let direction = 1;
     let pauseCount = 0;
     const ROW_HEIGHT = inner.firstChild ? inner.firstChild.offsetHeight : 44;
-    const PAUSE_TICKS = 4; // pause at top/bottom
+    const PAUSE_TICKS = 4;
 
     scrollTimer = setInterval(() => {
-      if (pauseCount > 0) {
-        pauseCount--;
-        return;
-      }
+      if (pauseCount > 0) { pauseCount--; return; }
 
       scrollOffset += ROW_HEIGHT * direction;
 
