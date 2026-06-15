@@ -3,315 +3,443 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ANDYSMANCLUB Awareness</title>
+<title>GXO Middleton — 45 Prizes to be Won</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<!-- Firebase (compat build, same project as the prize-draw wheel) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --orange: #ff6600;
-    --white: #ffffff;
-    --dim: rgba(255,255,255,0.5);
+  :root{
+    --bg:#0E0F12;
+    --bg-2:#15171C;
+    --panel:#1B1E25;
+    --orange:#FF5A1F;
+    --orange-deep:#E8460E;
+    --paper:#F4F2EC;
+    --steel:#9AA1AC;
+    --line:rgba(255,255,255,0.08);
+    --display: 'Archivo Black','Arial Black',sans-serif;
+    --heavy: 'Archivo', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono','Courier New',monospace;
   }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--paper); font-family:var(--heavy); }
 
-  body {
-    background: #000;
-    color: var(--white);
-    font-family: 'Lato', sans-serif;
-    overflow: hidden;
-    height: 100vh;
-    width: 100vw;
-    cursor: pointer; /* hint that clicking advances */
-  }
-
-  /* ── Progress bar ── */
-  #progress-bar {
-    position: fixed;
-    top: 0; left: 0;
-    height: 3px;
-    background: var(--orange);
-    width: 0%;
-    z-index: 100;
-    transition: width linear;
+  .stage{
+    position:relative; width:100vw; height:100vh; overflow:hidden;
+    display:flex; flex-direction:column;
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(255,90,31,0.10), transparent 60%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 55%, var(--bg) 100%);
   }
 
-  /* ── GXO branding ── */
-  .gxo-logo {
-    position: fixed;
-    top: 18px; left: 22px;
-    width: 72px;
-    opacity: 0.45;
-    z-index: 50;
+  /* ---- Header band (mirrors the poster's orange title slab) ---- */
+  .header{
+    flex:0 0 auto; padding: clamp(20px,3.4vh,40px) 6vw clamp(12px,2vh,22px);
+    display:flex; flex-direction:column; align-items:center; text-align:center; position:relative;
   }
-  .gxo-values {
-    position: fixed;
-    bottom: 14px; right: 20px;
-    font-size: 0.7em;
-    letter-spacing: 0.04em;
-    color: rgba(255,255,255,0.3);
-    z-index: 50;
+  .brand-slab{
+    display:inline-flex; align-items:center; gap:14px;
+    background:var(--orange); color:#fff;
+    padding: 8px 22px; transform: skewX(-7deg);
+    box-shadow:0 8px 22px rgba(255,90,31,0.3);
+  }
+  .brand-slab > *{ transform: skewX(7deg); }
+  .brand-gxo{ font-family:var(--display); font-size: clamp(24px,3.4vw,46px); letter-spacing:-0.5px; }
+  .brand-site{ font-family:var(--heavy); font-weight:800; font-style:italic; font-size: clamp(20px,3vw,40px); letter-spacing:1px; }
+  .eyebrow{
+    font-family:var(--mono); font-size: clamp(11px,1.3vw,16px);
+    letter-spacing:7px; color:var(--steel); text-transform:uppercase;
+    margin-top:14px; display:flex; align-items:center; gap:14px;
+  }
+  .eyebrow::before, .eyebrow::after{ content:''; width:clamp(20px,4vw,60px); height:1px; background:var(--line); }
+
+  /* ---- Big prize headline ---- */
+  .prize-headline{
+    flex:0 0 auto; text-align:center; padding: clamp(6px,1.4vh,16px) 6vw 0;
+  }
+  .prize-headline .big{
+    font-family:var(--display); line-height:0.95; text-transform:uppercase;
+    font-size: clamp(40px,7vw,108px); letter-spacing:-1px;
+  }
+  .prize-headline .big .num{ color:var(--orange); }
+  .prize-headline .sub{
+    font-family:var(--display); text-transform:uppercase; line-height:1;
+    font-size: clamp(24px,4.2vw,64px); margin-top: clamp(4px,0.8vh,10px); letter-spacing:-0.5px;
+  }
+  .prize-headline .sub .amt{ color:var(--orange); }
+
+  /* ---- Conveyor ---- */
+  .marquee-region{ flex:1 1 auto; display:flex; align-items:center; min-height:0; }
+  .marquee-wrap{ position:relative; width:100%; overflow:hidden; padding: clamp(10px,2vh,26px) 0; }
+  .marquee-wrap::before, .marquee-wrap::after{
+    content:''; position:absolute; top:0; bottom:0; width:7vw; z-index:3; pointer-events:none;
+  }
+  .marquee-wrap::before{ left:0; background:linear-gradient(90deg, var(--bg), transparent); }
+  .marquee-wrap::after{ right:0; background:linear-gradient(270deg, var(--bg), transparent); }
+
+  /* JS animates transform directly for a perfectly seamless, jump-free loop */
+  .marquee-track{ display:flex; gap: clamp(20px,2.4vw,40px); width:max-content; will-change:transform; }
+
+  .prize-card{ flex:0 0 auto; width: clamp(170px,15vw,250px); display:flex; flex-direction:column; }
+  .prize-photo{
+    width:100%; height: clamp(150px,16vh,210px); border-radius:14px;
+    background:linear-gradient(180deg,#23262e,#15171c);
+    border:1px solid var(--line); overflow:hidden; color:var(--steel);
+    display:flex; align-items:center; justify-content:center; position:relative;
+    box-shadow: 0 16px 34px rgba(0,0,0,0.45);
+  }
+  .prize-photo svg{ width:40%; height:40%; }
+  .prize-photo img{ width:100%; height:100%; object-fit:contain; display:block; padding:14px; }
+  .prize-name{
+    margin-top:12px; text-align:center;
+    font-family:var(--heavy); font-weight:800; font-size: clamp(12px,1.25vw,17px);
+    text-transform:uppercase; color:var(--paper); letter-spacing:0.4px; line-height:1.25;
+  }
+  .prize-name::after{
+    content:''; display:block; width:34px; height:3px; background:var(--orange);
+    margin:8px auto 0; border-radius:2px;
   }
 
-  /* ── Slide base ── */
-  .slide {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    flex-direction: column;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 1s ease;
-    background-image: url('1.jpg');
-    background-size: cover;
-    background-position: center;
+  /* ---- Footer info bar (draw date + auto-entry, like the poster) ---- */
+  .footer{
+    flex:0 0 auto; display:flex; align-items:stretch; gap:0; border-top:1px solid var(--line);
+    background:rgba(0,0,0,0.25);
   }
-  .slide::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.72);
-    z-index: 0;
+  .footer-cell{ flex:1; padding: clamp(12px,2vh,22px) 4vw; display:flex; align-items:center; gap:16px; }
+  .footer-cell + .footer-cell{ border-left:1px solid var(--line); }
+  .footer-icon{
+    flex:0 0 auto; width:clamp(40px,4vw,56px); height:clamp(40px,4vw,56px); border-radius:50%;
+    border:2px solid var(--orange); display:flex; align-items:center; justify-content:center; color:var(--orange);
   }
-  .slide > * { position: relative; z-index: 1; }
-  .slide.active {
-    opacity: 1;
-    pointer-events: auto;
-  }
+  .footer-icon svg{ width:54%; height:54%; }
+  .footer-label{ font-family:var(--mono); font-size: clamp(9px,1vw,12px); letter-spacing:3px; color:var(--steel); text-transform:uppercase; }
+  .footer-value{ font-family:var(--heavy); font-weight:800; font-size: clamp(15px,1.7vw,24px); text-transform:uppercase; line-height:1.15; margin-top:3px; }
+  .footer-value .hl{ color:var(--orange); }
 
-  /* ── Stat slides ── */
-  .stat-number {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(4rem, 14vw, 10rem);
-    color: var(--white);
-    line-height: 1;
-    letter-spacing: 0.02em;
+  /* ---- Bottom strapline ---- */
+  .strapline{
+    flex:0 0 auto; background:var(--orange); color:#fff; text-align:center;
+    padding: clamp(8px,1.4vh,16px) 0;
+    font-family:var(--display); text-transform:uppercase; letter-spacing:1px;
+    font-size: clamp(15px,2vw,30px);
+    display:flex; align-items:center; justify-content:center; gap:clamp(16px,4vw,60px);
   }
-  .stat-label {
-    font-size: clamp(0.85rem, 2vw, 1.1rem);
-    font-weight: 300;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--orange);
-    margin-top: 12px;
-  }
+  .strapline .dot{ width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.65); }
 
-  /* Pulse on stat number */
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50%       { transform: scale(1.03); }
+  /* ---- Admin entry ---- */
+  .admin-btn{
+    position:absolute; bottom:10px; right:12px; z-index:20;
+    background:rgba(0,0,0,0.4); color:var(--steel); border:1px solid rgba(255,255,255,0.18);
+    font-family:var(--mono); font-size:10px; letter-spacing:2px; text-transform:uppercase;
+    padding:6px 12px; border-radius:20px; cursor:pointer; opacity:0.4; transition:opacity .2s,color .2s,border-color .2s;
   }
-  .pulse { animation: pulse 2.5s ease-in-out infinite; }
+  .admin-btn:hover{ opacity:1; color:var(--paper); border-color:var(--orange); }
 
-  /* ── Text slides ── */
-  .message {
-    font-size: clamp(1.4rem, 4vw, 2.6rem);
-    font-weight: 300;
-    max-width: 700px;
-    line-height: 1.5;
-    letter-spacing: 0.02em;
-    padding: 0 24px;
-  }
-  .message em {
-    font-style: normal;
-    color: var(--orange);
-  }
+  /* ---- Overlays ---- */
+  .overlay{ position:fixed; inset:0; background:rgba(8,10,13,0.88); z-index:50; display:none; align-items:center; justify-content:center; padding:20px; }
+  .overlay.show{ display:flex; }
+  .overlay-panel{ background:var(--panel); border:1px solid var(--line); border-radius:14px; width:100%; max-width:480px; padding:30px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+  .overlay-panel.wide{ max-width:760px; max-height:84vh; display:flex; flex-direction:column; }
+  .overlay-title{ font-family:var(--display); font-size: clamp(18px,2.2vw,26px); text-transform:uppercase; letter-spacing:1px; margin-bottom:16px; }
+  .overlay-sub{ font-family:var(--mono); font-size:12px; color:var(--steel); letter-spacing:1px; margin-bottom:18px; }
+  .pin-input{ width:100%; font-family:var(--mono); font-size:26px; letter-spacing:12px; text-align:center; background:var(--bg); border:1px solid rgba(255,255,255,0.15); color:var(--paper); border-radius:8px; padding:14px; margin-bottom:6px; }
+  .pin-error{ color:var(--orange); font-family:var(--mono); font-size:13px; min-height:1.4em; margin-bottom:8px; }
+  .btn-amber{ font-family:var(--mono); font-weight:600; letter-spacing:2px; text-transform:uppercase; background:var(--orange); color:#fff; border:none; border-radius:8px; padding:13px 22px; cursor:pointer; font-size:12px; }
+  .btn-ghost-admin{ font-family:var(--mono); font-weight:600; letter-spacing:2px; text-transform:uppercase; background:transparent; color:var(--steel); border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:13px 22px; cursor:pointer; font-size:12px; }
+  .btn-ghost-admin:hover{ color:var(--paper); border-color:var(--paper); }
+  .overlay-footer{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; flex:0 0 auto; }
+  .admin-list{ overflow-y:auto; flex:1; margin:4px -8px; padding:0 8px; }
+  .admin-row{ display:flex; align-items:center; gap:14px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .admin-thumb{ width:54px; height:54px; border-radius:8px; background:var(--bg); flex:0 0 auto; display:flex; align-items:center; justify-content:center; overflow:hidden; color:var(--steel); }
+  .admin-thumb img{ width:100%; height:100%; object-fit:contain; padding:4px; }
+  .admin-thumb svg{ width:55%; height:55%; }
+  .admin-name{ flex:1; font-family:var(--heavy); font-size:13px; color:var(--paper); line-height:1.35; }
+  .admin-pic-label{ font-family:var(--mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--orange); border:1px solid var(--orange); border-radius:6px; padding:7px 12px; cursor:pointer; white-space:nowrap; }
+  .admin-pic-label:hover{ background:var(--orange); color:#fff; }
+  .admin-pic-label input{ display:none; }
+  .admin-status{ font-family:var(--mono); font-size:12px; color:var(--steel); margin-bottom:14px; }
 
-  /* ── CTA slide ── */
-  #slide-cta {
-    gap: 10px;
-    padding: 20px;
+  @media (prefers-reduced-motion: reduce){ .marquee-track{ transform:none !important; } }
+  @media (max-width:760px){
+    .footer{ flex-direction:column; }
+    .footer-cell + .footer-cell{ border-left:none; border-top:1px solid var(--line); }
   }
-  .amclub-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2.8rem, 8vw, 5.5rem);
-    color: var(--orange);
-    letter-spacing: 0.05em;
-    opacity: 0;
-    transform: translateY(16px);
-    transition: opacity 1.2s ease 0.3s, transform 1.2s ease 0.3s;
-  }
-  #slide-cta.active .amclub-logo {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .hashtag {
-    font-size: clamp(0.9rem, 2.5vw, 1.3rem);
-    letter-spacing: 0.18em;
-    color: var(--dim);
-    margin-top: 4px;
-    opacity: 0;
-    transition: opacity 1s ease 0.9s;
-  }
-  #slide-cta.active .hashtag { opacity: 1; }
-
-  .divider {
-    width: 60px;
-    height: 1px;
-    background: rgba(255,255,255,0.2);
-    margin: 20px auto;
-    opacity: 0;
-    transition: opacity 1s ease 1.2s;
-  }
-  #slide-cta.active .divider { opacity: 1; }
-
-  .scan-label {
-    font-size: clamp(0.75rem, 1.8vw, 1rem);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--dim);
-    margin-bottom: 14px;
-    opacity: 0;
-    transition: opacity 1s ease 1.4s;
-  }
-  #slide-cta.active .scan-label { opacity: 1; }
-
-  .qr-wrap {
-    background: #fff;
-    padding: 10px;
-    border-radius: 6px;
-    display: inline-block;
-    opacity: 0;
-    transform: scale(0.92);
-    transition: opacity 1s ease 1.5s, transform 1s ease 1.5s;
-  }
-  #slide-cta.active .qr-wrap {
-    opacity: 1;
-    transform: scale(1);
-  }
-  .qr-wrap img { display: block; }
-
-  .tagline {
-    font-size: clamp(0.75rem, 1.6vw, 0.95rem);
-    font-weight: 300;
-    color: rgba(255,255,255,0.35);
-    letter-spacing: 0.08em;
-    margin-top: 6px;
-    opacity: 0;
-    transition: opacity 1s ease 2s;
-  }
-  #slide-cta.active .tagline { opacity: 1; }
-
-
-
-
 </style>
 </head>
 <body>
+<div class="stage">
 
-<!-- Progress -->
-<div id="progress-bar"></div>
+  <header class="header">
+    <div class="brand-slab">
+      <span class="brand-gxo">GXO</span>
+      <span class="brand-site" id="siteName">MIDDLETON</span>
+    </div>
+    <div class="eyebrow">Safety Celebration · 1 Year Zero Lost Time Accidents</div>
+  </header>
 
-<!-- GXO Branding -->
-<img src="gxo-logo.png" class="gxo-logo" alt="GXO">
-<div class="gxo-values">Be Safe &bull; Be Inclusive &bull; Make an Impact &bull; Change the Game &bull; Deliver Results</div>
-
-<!-- Audio (plays after user interaction) -->
-<audio id="hb" loop>
-  <source src="heartbeat.mp3" type="audio/mpeg">
-</audio>
-
-<!-- ─── Slides ─── -->
-
-<div class="slide active" id="s0">
-  <div class="stat-number pulse">600,000</div>
-  <div class="stat-label">men every year</div>
-</div>
-
-<div class="slide" id="s1">
-  <div class="stat-number pulse">40,000</div>
-  <div class="stat-label">men every month</div>
-</div>
-
-<div class="slide" id="s2">
-  <div class="stat-number pulse">12,000</div>
-  <div class="stat-label">men every week</div>
-</div>
-
-<div class="slide" id="s3">
-  <div class="stat-number pulse">1,500</div>
-  <div class="stat-label">men every day</div>
-</div>
-
-<div class="slide" id="s4">
-  <div class="stat-number pulse">60</div>
-  <div class="stat-label">men every hour</div>
-</div>
-
-<div class="slide" id="s5">
-  <div class="stat-number pulse">1</div>
-  <div class="stat-label">man every minute</div>
-</div>
-
-<div class="slide" id="s6">
-  <p class="message">These may seem like just numbers…</p>
-</div>
-
-<div class="slide" id="s7">
-  <p class="message">But behind every one is a <em>son</em>, a <em>father</em>, a <em>friend</em>.</p>
-</div>
-
-<div class="slide" id="s8">
-  <p class="message">This is the number of men who take their own lives.</p>
-</div>
-
-<div class="slide" id="slide-cta">
-  <div class="amclub-logo">ANDYSMANCLUB</div>
-  <div class="hashtag">#ItsOkayToTalk</div>
-  <div class="divider"></div>
-  <div class="scan-label">Find a group near you</div>
-  <div class="qr-wrap">
-    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=000000&bgcolor=ffffff&data=https://andysmanclub.co.uk" width="180" height="180" alt="QR code for andysmanclub.co.uk">
+  <div class="prize-headline">
+    <div class="big"><span class="num">45</span> PRIZES TO BE WON</div>
+    <div class="sub">TOTALLING <span class="amt">£5,000</span></div>
   </div>
-  <div class="tagline">Free peer-to-peer support groups across the UK &mdash; andysmanclub.co.uk</div>
+
+  <div class="marquee-region">
+    <div class="marquee-wrap">
+      <div class="marquee-track" id="marqueeTrack"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-cell">
+      <div class="footer-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+      </div>
+      <div>
+        <div class="footer-label">Draw Date</div>
+        <div class="footer-value">12:00 Noon · <span class="hl">Fri 19 June 2026</span></div>
+      </div>
+    </div>
+    <div class="footer-cell">
+      <div class="footer-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15.5 14.2c2.5.3 4.5 2.4 4.5 5"/></svg>
+      </div>
+      <div>
+        <div class="footer-label">No sign-up needed</div>
+        <div class="footer-value">All on-site colleagues <span class="hl">automatically entered</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="strapline">
+    <span>One Team</span><span class="dot"></span><span>One Vision</span><span class="dot"></span><span>One Contract</span>
+  </div>
+
+  <button class="admin-btn" id="adminBtn" title="Add or change prize photos">⚙ Admin</button>
 </div>
 
+<!-- PIN gate -->
+<div class="overlay" id="pinOverlay">
+  <div class="overlay-panel">
+    <div class="overlay-title">Admin access</div>
+    <div class="overlay-sub">Enter the PIN to add or change prize photos</div>
+    <input type="password" id="pinInput" class="pin-input" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••">
+    <div class="pin-error" id="pinError"></div>
+    <div class="overlay-footer">
+      <button class="btn-ghost-admin" id="pinCancel">Cancel</button>
+      <button class="btn-amber" id="pinUnlock">Unlock</button>
+    </div>
+  </div>
+</div>
 
+<!-- Admin panel -->
+<div class="overlay" id="adminOverlay">
+  <div class="overlay-panel wide">
+    <div class="overlay-title">Prize photos</div>
+    <div class="admin-status" id="adminStatus">Loading prize list…</div>
+    <div class="admin-list" id="adminList"></div>
+    <div class="overlay-footer">
+      <button class="btn-ghost-admin" id="adminClose">Done</button>
+    </div>
+  </div>
+</div>
 
 <script>
-  const slides  = Array.from(document.querySelectorAll('.slide'));
-  const bar     = document.getElementById('progress-bar');
-  const hbAudio = document.getElementById('hb');
+/* ============================================================
+   SETTINGS — same Firebase project as the prize-draw wheel.
+   Reads/writes draw/state/prizes, so photos added on either page sync.
+   ============================================================ */
+var firebaseConfig = {
+  apiKey: "AIzaSyBKO2bkpm_KiIsgATtHP9-9_8m9hnylDvw",
+  authDomain: "draw-78948.firebaseapp.com",
+  databaseURL: "https://draw-78948-default-rtdb.firebaseio.com",
+  projectId: "draw-78948",
+  storageBucket: "draw-78948.firebasestorage.app",
+  messagingSenderId: "723942245102",
+  appId: "1:723942245102:web:e6a6eaac8402e842bae9ff"
+};
+var ADMIN_PIN = "1234";
+var SITE_NAME = "MIDDLETON";
 
-  const timings = [6000, 6000, 6000, 6000, 6000, 7000, 7000, 7000, 8000, 12000];
+var DEFAULT_PRIZES = [
+  'SONY PlayStation 5','Xbox Series X 1TB','NINTENDO Switch 2',
+  'NINJA Woodfire Pro XL Outdoor Electric BBQ Grill & Smoker',
+  'Apple 11" iPad','Apple 11" iPad','Samsung 55" TV','DYSON Supersonic Hair Dryer',
+  'SHARK Matrix Plus 2-in-1 Robot Vacuum Cleaner','Apple Watch SE 3 GPS 40mm',
+  'SAMSUNG Galaxy Tab A11 8.7" Tablet 128GB','SAMSUNG Galaxy Tab A11 8.7" Tablet 128GB',
+  'NINJA SLUSHI Frozen Drink Maker','FITBIT Versa 4 Smart Watch',
+  'RUSSELL HOBBS Hot & Cool Bladeless Tower Fan','RUSSELL HOBBS Hot & Cool Bladeless Tower Fan',
+  'SHARK StainStriker Carpet Cleaner','Apple AirPods 4','Apple AirPods 4',
+  'DYSON Hushjet Mini Cool Handheld Fan','TEFAL Jamie Oliver Easy Fry','TEFAL Jamie Oliver Easy Fry','TEFAL Jamie Oliver Easy Fry',
+  'RING Battery 2K Video Doorbell','RING Battery 2K Video Doorbell',
+  'RUSSELL HOBBS Steam Genie 2in1 Maestro Clothes Steamer','RUSSELL HOBBS Compact Solo Microwave',
+  'BEATS Solo Buds Wireless Bluetooth Earbuds','BEATS Solo Buds Wireless Bluetooth Earbuds',
+  'AMAZON Fire TV Stick HD with Alexa Voice Remote','AMAZON Fire TV Stick HD with Alexa Voice Remote',
+  'AMAZON Fire TV Stick HD with Alexa Voice Remote','AMAZON Fire TV Stick HD with Alexa Voice Remote',
+  'AMAZON Fire TV Stick HD with Alexa Voice Remote',
+  'SALTER Blender','SALTER Blender','SALTER Blender',
+  'Hamilton Beach Slow Cooker','Hamilton Beach Slow Cooker','Hamilton Beach Slow Cooker',
+  'RUSSELL HOBBS Cordless Steam Iron',
+  'GROOV-E Wave Glow Portable Bluetooth Speaker','GROOV-E Wave Glow Portable Bluetooth Speaker',
+  'GROOV-E Wave Glow Portable Bluetooth Speaker','GROOV-E Wave Glow Portable Bluetooth Speaker'
+].map(function(n){ return { name:n, pic:null }; });
+/* ============================================================ */
 
-  let current = 0;
-  let timer   = null;
+var $ = function(id){ return document.getElementById(id); };
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  // ── Slideshow ─────────────────────────────────────────────────
-  function goTo(idx) {
-    slides[current].classList.remove('active');
-    current = idx % slides.length;
-    slides[current].classList.add('active');
+if (SITE_NAME) $('siteName').textContent = SITE_NAME;
 
-    const dur = timings[current];
-    bar.style.transition = 'none';
-    bar.style.width = '0%';
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      bar.style.transition = `width ${dur}ms linear`;
-      bar.style.width = ((current + 1) / slides.length * 100) + '%';
-    }));
-    timer = setTimeout(() => goTo(current + 1), dur);
+var prizes = JSON.parse(JSON.stringify(DEFAULT_PRIZES));
+var prizesRef = null;
+var localMode = false;
+var LOCAL_KEY = 'gxo-canteen-prizes-v1';
+var seededOnce = false;
+
+function normalisePrizes(raw){
+  if (!raw) return null;
+  var arr = Array.isArray(raw) ? raw : Object.values(raw);
+  if (!arr.length) return null;
+  return arr.map(function(p){ return { name: p.name, pic: p.pic || null }; });
+}
+function goLocal(){
+  if (localMode) return;
+  localMode = true;
+  try { var s = normalisePrizes(JSON.parse(localStorage.getItem(LOCAL_KEY) || 'null')); if (s) prizes = s; } catch(e){}
+  $('adminStatus').textContent = 'Not connected to Firebase — photos saved in this browser only.';
+  buildMarquee(); renderAdminList();
+}
+function initFirebase(){
+  if (!firebaseConfig.apiKey){ goLocal(); return; }
+  try {
+    firebase.initializeApp(firebaseConfig);
+    prizesRef = firebase.database().ref('draw/state/prizes');
+    prizesRef.on('value', function(snap){
+      var norm = normalisePrizes(snap.val());
+      if (norm){
+        prizes = norm;
+        $('adminStatus').textContent = 'Connected — changes sync to the prize-draw wheel too.';
+        buildMarquee(); renderAdminList();
+      } else if (!snap.exists()){
+        if (!seededOnce){ seededOnce = true; prizesRef.set(prizes); }
+        buildMarquee(); renderAdminList();
+      }
+    }, function(){ goLocal(); });
+  } catch(e){ goLocal(); }
+}
+function savePrizePic(index, dataUrl){
+  prizes[index].pic = dataUrl;
+  if (localMode){ localStorage.setItem(LOCAL_KEY, JSON.stringify(prizes)); buildMarquee(); renderAdminList(); }
+  else { prizesRef.child(String(index)).child('pic').set(dataUrl); }
+}
+
+function giftIconSVG(){
+  return '<svg viewBox="0 0 64 64" aria-hidden="true">'+
+    '<rect x="10" y="26" width="44" height="30" rx="3" fill="currentColor"/>'+
+    '<rect x="10" y="18" width="44" height="10" rx="2" fill="currentColor"/>'+
+    '<rect x="29" y="14" width="6" height="42" fill="rgba(0,0,0,0.28)"/>'+
+    '<path d="M32 14c-6 0-10-4-10-8 4 0 10 3 10 8z" fill="currentColor"/>'+
+    '<path d="M32 14c6 0 10-4 10-8 -4 0-10 3-10 8z" fill="currentColor"/></svg>';
+}
+function cardHTML(p){
+  var photo = p.pic ? '<div class="prize-photo"><img src="'+p.pic+'" alt=""></div>'
+                    : '<div class="prize-photo">'+giftIconSVG()+'</div>';
+  return '<div class="prize-card">'+photo+'<div class="prize-name">'+escHtml(p.name)+'</div></div>';
+}
+
+/* ---- Seamless conveyor: JS measures one copy's width and loops transform exactly ---- */
+var track = $('marqueeTrack');
+var marqueeOffset = 0;
+var copyWidth = 0;
+var lastTime = 0;
+var SPEED = 70;            // pixels per second (raise to speed up)
+var marqueeReady = false;
+var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var gapPx = 0;
+
+function buildMarquee(){
+  if (!track || !prizes.length) return;
+  // two identical copies back-to-back
+  track.innerHTML = prizes.map(cardHTML).join('') + prizes.map(cardHTML).join('');
+  marqueeReady = false;
+  // measure after layout + images settle a touch
+  requestAnimationFrame(function(){ requestAnimationFrame(measureMarquee); });
+}
+function measureMarquee(){
+  var style = getComputedStyle(track);
+  gapPx = parseFloat(style.columnGap || style.gap || 0) || 0;
+  // width of ONE copy = scrollWidth minus one gap, divided by 2 (two copies), plus one gap back
+  // simpler: total scroll width includes (2N items) with (2N-1) gaps; one copy spans N items + N gaps
+  var full = track.scrollWidth;            // both copies + the gap between every item
+  copyWidth = (full + gapPx) / 2;          // each copy occupies half, accounting for the seam gap
+  marqueeOffset = marqueeOffset % copyWidth;
+  marqueeReady = true;
+}
+function tickMarquee(now){
+  if (marqueeReady && !reduceMotion){
+    if (lastTime){
+      var dt = (now - lastTime) / 1000;
+      marqueeOffset += SPEED * dt;
+      if (marqueeOffset >= copyWidth) marqueeOffset -= copyWidth;  // wrap with no visible jump
+      track.style.transform = 'translateX(' + (-marqueeOffset) + 'px)';
+    }
   }
+  lastTime = now;
+  requestAnimationFrame(tickMarquee);
+}
+window.addEventListener('resize', function(){ if (marqueeReady) measureMarquee(); });
 
-  // Click/tap to advance
-  document.body.addEventListener('click', () => {
-    clearTimeout(timer);
-    goTo(current + 1);
-  });
+/* ---- image resize ---- */
+function resizeImage(file, cb){
+  var img = new Image();
+  img.onload = function(){
+    var maxDim = 480, scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    var c = document.createElement('canvas');
+    c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    cb(c.toDataURL('image/jpeg', 0.85));
+  };
+  img.onerror = function(){ alert('Could not read that image.'); };
+  img.src = URL.createObjectURL(file);
+}
 
-  // Start
-  hbAudio.play().catch(() => {});
-  goTo(0);
+/* ---- admin ---- */
+function renderAdminList(){
+  var list = $('adminList'); if (!list) return;
+  list.innerHTML = prizes.map(function(p, i){
+    var thumb = p.pic ? '<img src="'+p.pic+'" alt="">' : giftIconSVG();
+    return '<div class="admin-row"><div class="admin-thumb">'+thumb+'</div>'+
+      '<div class="admin-name">'+escHtml(p.name)+'</div>'+
+      '<label class="admin-pic-label">'+(p.pic?'Change photo':'Add photo')+
+      '<input type="file" accept="image/*" data-i="'+i+'"></label></div>';
+  }).join('');
+}
+$('adminList').addEventListener('change', function(e){
+  var input = e.target.closest('input[type=file]'); if (!input || !input.files[0]) return;
+  var i = parseInt(input.getAttribute('data-i'), 10);
+  resizeImage(input.files[0], function(d){ savePrizePic(i, d); });
+});
+var adminUnlocked = false;
+$('adminBtn').addEventListener('click', function(){
+  if (adminUnlocked) showAdminPanel();
+  else { $('pinOverlay').classList.add('show'); $('pinInput').focus(); }
+});
+function tryUnlock(){
+  if ($('pinInput').value === ADMIN_PIN){
+    adminUnlocked = true; $('pinOverlay').classList.remove('show'); $('pinInput').value=''; $('pinError').textContent=''; showAdminPanel();
+  } else { $('pinError').textContent = 'Wrong PIN — try again.'; }
+}
+$('pinUnlock').addEventListener('click', tryUnlock);
+$('pinInput').addEventListener('keydown', function(e){ if (e.key==='Enter') tryUnlock(); });
+$('pinCancel').addEventListener('click', function(){ $('pinOverlay').classList.remove('show'); $('pinInput').value=''; $('pinError').textContent=''; });
+function showAdminPanel(){ renderAdminList(); $('adminOverlay').classList.add('show'); }
+$('adminClose').addEventListener('click', function(){ $('adminOverlay').classList.remove('show'); });
 
-  // Resume audio on first interaction if browser blocked it
-  document.addEventListener('click', () => {
-    hbAudio.play().catch(() => {});
-  }, { once: true });
+/* ---- go ---- */
+buildMarquee();
+requestAnimationFrame(tickMarquee);
+initFirebase();
 </script>
 </body>
 </html>
